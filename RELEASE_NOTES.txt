@@ -1,0 +1,13 @@
+2025-03-06
+
+Major:
+
+* Export address in separate columns
+* Export name in separate columns
+* Fix create company
+* Fix chapter filter for export
+
+Minor:
+
+* Autocomplete result list cycle with up/down keys.
+* Default select structured address tab on members without an address.
