@@ -48,7 +48,20 @@ func Export(destFile *os.File, members []*model.Member, columns []string) error 
 	}
 
 	// Create the header row
-	headers := columns
+	headers := []string{}
+
+	// Break the address column into 3 granular columns for city, street and number.
+	for _, column := range columns {
+		switch column {
+		case "Διεύθυνση":
+			headers = append(headers, "Δήμος")
+			headers = append(headers, "Οδός/Αριθμός")
+			headers = append(headers, "ΤΚ")
+		default:
+			headers = append(headers, column)
+		}
+	}
+
 	if err := file.SetSheetRow(sheet, "A1", &headers); err != nil {
 		return fmt.Errorf("failed to set sheet headers: %w", err)
 	}
@@ -71,7 +84,9 @@ func Export(destFile *os.File, members []*model.Member, columns []string) error 
 			case "Όνομα":
 				mem = append(mem, fmt.Sprintf("%s %s του %s", member.LastName, member.FirstName, member.FatherName))
 			case "Διεύθυνση":
-				mem = append(mem, member.AddressFormatted)
+				mem = append(mem, cityWithFallback(member))
+				mem = append(mem, streetWithFallback(member))
+				mem = append(mem, postCodeWithFallback(member))
 			case "Κινητό":
 				mem = append(mem, member.Mobile)
 			case "Email":
@@ -139,4 +154,32 @@ func createRowStyle(fillColor string) *excelize.Style {
 			Pattern: 1,
 		},
 	}
+}
+
+func streetWithFallback(member *model.Member) string {
+	if member.AddressStreetName != "" {
+		return fmt.Sprintf("%s %s", member.AddressStreetName, member.AddressStreetNo)
+	}
+
+	return member.LegacyAddress
+}
+
+func cityWithFallback(member *model.Member) string {
+	if member.AddressCityName != "" {
+		return member.AddressCityName
+	}
+
+	if member.LegacyCity != "" {
+		return member.LegacyCity
+	}
+
+	return member.LegacyArea
+}
+
+func postCodeWithFallback(member *model.Member) string {
+	if member.AddressPostCode != "" {
+		return member.AddressPostCode
+	}
+
+	return member.LegacyPostCode
 }

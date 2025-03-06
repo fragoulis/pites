@@ -48,13 +48,13 @@ func newAddressFormattedFromRecord(rec *models.Record) string {
 }
 
 func newAddressStreetNameFromRecord(rec *models.Record) string {
-	city := rec.ExpandedOne("address_street_id")
+	street := rec.ExpandedOne("address_street_id")
 
-	if city == nil {
+	if street == nil {
 		return ""
 	}
 
-	return city.GetString("name")
+	return street.GetString("name")
 }
 
 func newAddressCityNameFromRecord(rec *models.Record) string {
@@ -65,6 +65,16 @@ func newAddressCityNameFromRecord(rec *models.Record) string {
 	}
 
 	return city.GetString("name")
+}
+
+func newAddressPostCodeFromRecord(rec *models.Record) string {
+	street := rec.ExpandedOne("address_street_id")
+
+	if street == nil {
+		return ""
+	}
+
+	return street.GetString("zipcode")
 }
 
 func newAddressFormatted(street, streetNo, city, zipcode string) *addressFormatted {

@@ -41,6 +41,7 @@ type Member struct {
 	AddressFormatted      string                   `json:"address_formatted"`
 	AddressStreetName     string                   `json:"address_street_name"`
 	AddressCityName       string                   `json:"address_city_name"`
+	AddressPostCode       string                   `json:"address_post_code"`
 	CompanyFormatted      string                   `json:"company_formatted"`
 	CompanyName           string                   `json:"company_name"`
 	CompanyBranchName     string                   `json:"company_branch_name"`
@@ -91,6 +92,7 @@ func NewFromRecord(
 		AddressFormatted:  newAddressFormattedFromRecord(rec),
 		AddressStreetName: newAddressStreetNameFromRecord(rec),
 		AddressCityName:   newAddressCityNameFromRecord(rec),
+		AddressPostCode:   newAddressPostCodeFromRecord(rec),
 		Employments:       employments,
 		Subscriptions:     subscriptions,
 		Payments:          payments,
