@@ -3,7 +3,7 @@
 	import pb from '$lib/pocketbase';
 	import { Select } from 'flowbite-svelte';
 
-	export let value: any = 'none';
+	export let value: string = '';
 	export let url: string;
 	export let sendOptions: Object = {};
 	export let optionValue: string = 'id';

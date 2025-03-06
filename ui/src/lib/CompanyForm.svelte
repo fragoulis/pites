@@ -15,7 +15,7 @@
 
 	let addressFormatted: string | undefined;
 
-	if (record) {
+	if (record && record.id) {
 		form.name = record.name;
 		form.email = record.email;
 		form.phone = record.phone;

@@ -53,6 +53,8 @@ func Create(ctx echo.Context, app *pocketbase.PocketBase, data map[string]any) (
 			return fmt.Errorf("failed to load data: %w", err)
 		}
 
+		app.Logger().Debug("create company", "data", data)
+
 		event := new(core.RecordCreateEvent)
 		event.HttpContext = ctx
 		event.Collection = collection
