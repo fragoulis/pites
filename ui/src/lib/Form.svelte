@@ -28,14 +28,12 @@
 
 			dispatch('success', { model: record });
 		} catch (err: any) {
-			console.debug(err);
-
 			if (err.originalError) {
 				console.debug(err.originalError);
 			}
 
 			if (err.data) {
-				errors = objectMap(err.data.data, (v) => {
+				errors = objectMap(err.data.data, (v: any) => {
 					return v.message;
 				});
 				const firstErrorId = Object.keys(errors)[0];

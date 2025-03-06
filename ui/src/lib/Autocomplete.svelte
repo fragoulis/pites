@@ -47,10 +47,8 @@
 			});
 
 			if (res.records) {
-				console.log(typeof res.records);
 				records = res.records;
 			} else {
-				console.log(typeof res);
 				records = res;
 			}
 			open = true;
@@ -74,33 +72,33 @@
 		dispatch('select', { item: records[i] });
 	};
 
-	const on_key_down = (e: any) => {
+	const onKeyUp = (e: any) => {
 		if (e.key == 'ArrowDown' || e.key == 'ArrowUp' || e.key == 'Enter') {
-			e.preventDefault();
-
 			if (e.repeat) return;
 			if (!records || records.length == 0) return;
 
 			switch (e.key) {
 				case 'ArrowDown':
-					if (highlightedRecordIdx < records.length - 1) {
-						highlightedRecordIdx++;
+					highlightedRecordIdx++;
+					if (highlightedRecordIdx >= records.length) {
+						highlightedRecordIdx = 0;
 					}
 					break;
 				case 'ArrowUp':
-					if (highlightedRecordIdx > 0) {
-						highlightedRecordIdx--;
+					highlightedRecordIdx--;
+					if (highlightedRecordIdx < 0) {
+						highlightedRecordIdx = records.length - 1;
 					}
 					break;
 				case 'Enter':
 					onSelect(highlightedRecordIdx);
 					break;
 			}
+		} else {
+			performSearch();
 		}
 	};
 </script>
-
-<svelte:window on:keyup={on_key_down} />
 
 <ButtonGroup class="w-full" {size}>
 	<InputAddon>
@@ -112,7 +110,7 @@
 		bind:value={query}
 		autocomplete="off"
 		on:focus={(e) => e.target?.select()}
-		on:input={performSearch}
+		on:keyup={onKeyUp}
 	/>
 	{#if showClearBtn}
 		<Button on:click={clear} color="red"><CloseOutline /></Button>
