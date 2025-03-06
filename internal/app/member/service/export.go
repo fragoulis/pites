@@ -53,6 +53,10 @@ func Export(destFile *os.File, members []*model.Member, columns []string) error 
 	// Break the address column into 3 granular columns for city, street and number.
 	for _, column := range columns {
 		switch column {
+		case "Όνομα":
+			headers = append(headers, "Όνομα")
+			headers = append(headers, "Επώνυμο")
+			headers = append(headers, "Πατρώνυμο")
 		case "Διεύθυνση":
 			headers = append(headers, "Δήμος")
 			headers = append(headers, "Οδός/Αριθμός")
@@ -82,7 +86,9 @@ func Export(destFile *os.File, members []*model.Member, columns []string) error 
 			case "Α/Μ":
 				mem = append(mem, member.MemberNo)
 			case "Όνομα":
-				mem = append(mem, fmt.Sprintf("%s %s του %s", member.LastName, member.FirstName, member.FatherName))
+				mem = append(mem, member.LastName)
+				mem = append(mem, member.FirstName)
+				mem = append(mem, member.FatherName)
 			case "Διεύθυνση":
 				mem = append(mem, cityWithFallback(member))
 				mem = append(mem, streetWithFallback(member))
