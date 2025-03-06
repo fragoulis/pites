@@ -14,7 +14,7 @@
 		addressType = 'structured';
 	} else if (form.address_street_id == '' && form.address_city_id != '') {
 		addressType = 'city_only';
-	} else {
+	} else if (form.legacy_address != '') {
 		addressType = 'unstructured';
 	}
 </script>
