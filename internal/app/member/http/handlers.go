@@ -1,12 +1,15 @@
 package http
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/tools/rest"
 
 	chapterQuery "github.com/fragoulis/setip_v2/internal/app/chapter/query"
@@ -25,20 +28,9 @@ func Search(app *pocketbase.PocketBase) func(echo.Context) error {
 		ctx.Set("dao", app.Dao())
 
 		searchParams := query.NewSearchParams(ctx.QueryParams())
-
-		// Chapter, if present, will override the address related filters.
-		if searchParams.ChapterID != "" {
-			chapter, found, err := chapterQuery.FindByID(app.Dao(), searchParams.ChapterID)
-			if err != nil {
-				return apis.NewBadRequestError("failed to find chapter", err)
-			}
-
-			if !found {
-				return apis.NewBadRequestError("chapter not found", nil)
-			}
-
-			searchParams.AddressCityIDs = chapter.CityIDs
-			searchParams.LegacyArea = chapter.RawCityQuery
+		searchParams, err := prepareMembersearch(app.Dao(), searchParams)
+		if err != nil {
+			return apis.NewBadRequestError("failed to prepare query", err)
 		}
 
 		count, err := query.Count(ctx, searchParams)
@@ -164,16 +156,21 @@ func Export(app *pocketbase.PocketBase) func(echo.Context) error {
 	return func(ctx echo.Context) error {
 		ctx.Set("dao", app.Dao())
 
-		var searchParams query.SearchParams
+		var searchParamsPre query.SearchParams
 
-		err := rest.CopyJsonBody(ctx.Request(), &searchParams)
+		err := rest.CopyJsonBody(ctx.Request(), &searchParamsPre)
 		if err != nil {
-			return apis.NewBadRequestError("failed to copy search params", err)
+			return apis.NewBadRequestError("failed to prepare query", err)
+		}
+
+		searchParams, err := prepareMembersearch(app.Dao(), &searchParamsPre)
+		if err != nil {
+			return apis.NewBadRequestError("failed to prepare query", err)
 		}
 
 		searchParams.Limit = 10000
 
-		members, err := query.Search(ctx, &searchParams)
+		members, err := query.Search(ctx, searchParams)
 		if err != nil {
 			return apis.NewBadRequestError("failed to search members", err)
 		}
@@ -238,4 +235,23 @@ func Deactivate(app *pocketbase.PocketBase) func(echo.Context) error {
 
 		return ctx.JSON(http.StatusOK, nil)
 	}
+}
+
+func prepareMembersearch(dao *daos.Dao, searchParams *query.SearchParams) (*query.SearchParams, error) {
+	// Chapter, if present, will override the address related filters.
+	if searchParams.ChapterID != "" {
+		chapter, found, err := chapterQuery.FindByID(dao, searchParams.ChapterID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find chapter: %w", err)
+		}
+
+		if !found {
+			return nil, errors.New("chapter not found")
+		}
+
+		searchParams.AddressCityIDs = chapter.CityIDs
+		searchParams.LegacyArea = chapter.RawCityQuery
+	}
+
+	return searchParams, nil
 }
