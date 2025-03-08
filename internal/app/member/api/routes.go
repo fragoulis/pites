@@ -16,6 +16,7 @@ func RegisterRoutes(srvEvnt *core.ServeEvent, app *pocketbase.PocketBase) {
 	srvEvnt.Router.GET("/members/next", http.GetNextMemberNo(app), apis.RequireAdminOrRecordAuth("users"))
 	srvEvnt.Router.POST("/members", http.CreateMember(app), apis.RequireAdminOrRecordAuth("users"))
 	srvEvnt.Router.POST("/members/export", http.Export(app), apis.RequireAdminOrRecordAuth("users"))
+	srvEvnt.Router.POST("/members/import", http.Import(app), apis.RequireAdminOrRecordAuth("users"))
 	srvEvnt.Router.POST("/members/:id/subscriptions", http.Activate(app), apis.RequireAdminOrRecordAuth("users"))
 	srvEvnt.Router.DELETE("/members/:id/subscriptions", http.Deactivate(app), apis.RequireAdminOrRecordAuth("users"))
 }

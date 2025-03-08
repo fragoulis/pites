@@ -24,6 +24,7 @@ import (
 
 const (
 	subscriptionFee = 2
+	RegistrationFee = 4
 )
 
 //nolint:gochecknoglobals
@@ -47,8 +48,6 @@ var invalidAmount = validation.NewError(
 
 //nolint:gochecknoglobals
 var invalidMonths = validation.NewError("validation_required", "Οι μήνες δε μπορούν να υπερβαίνουν τους 24")
-
-const RegistrationFee = 4
 
 type CreatePaymentRequest struct {
 	MemberID                string `json:"member_id"`
@@ -169,7 +168,7 @@ Unknown error: %s`, err)
 		data.Months -= 2
 	}
 
-	err = app.Dao().RunInTransaction(func(tx *daos.Dao) error {
+	err = dao.RunInTransaction(func(tx *daos.Dao) error {
 		ctx.Set("dao", tx)
 
 		form := forms.NewRecordUpsert(app, newPayment)

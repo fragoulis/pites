@@ -110,7 +110,7 @@ func UpdateMember(app *pocketbase.PocketBase) func(echo.Context) error {
 			return apis.NewBadRequestError("failed to copy data", err)
 		}
 
-		err = service.UpdateMember(ctx, app, record, &data)
+		_, err = service.UpdateMember(ctx, app, app.Dao(), record, &data)
 		if err != nil {
 			return apis.NewBadRequestError("failed to update details", err)
 		}
@@ -143,7 +143,7 @@ func CreateMember(app *pocketbase.PocketBase) func(echo.Context) error {
 			return apis.NewBadRequestError("failed to copy data", err)
 		}
 
-		err = service.CreateMember(ctx, app, &data)
+		_, err = service.CreateMember(ctx, app, app.Dao(), &data)
 		if err != nil {
 			return apis.NewBadRequestError("failed to create member", err)
 		}
@@ -234,6 +234,38 @@ func Deactivate(app *pocketbase.PocketBase) func(echo.Context) error {
 		}
 
 		return ctx.JSON(http.StatusOK, nil)
+	}
+}
+
+func Import(app *pocketbase.PocketBase) func(echo.Context) error {
+	return func(ctx echo.Context) error {
+		ctx.Set("dao", app.Dao())
+
+		// Retrieve the file from the form data
+		file, err := ctx.FormFile("file")
+		if err != nil {
+			return apis.NewBadRequestError("Unable to retrieve file", err)
+		}
+
+		// Open the uploaded file
+		src, err := file.Open()
+		if err != nil {
+			return apis.NewApiError(http.StatusInternalServerError, "Unable to open file", err)
+		}
+		defer src.Close()
+
+		membersByName, companiesByName, err := service.Import(ctx, app, src)
+		if err != nil {
+			return apis.NewBadRequestError(
+				fmt.Sprintf("failed to import excel of members: %s", err),
+				err,
+			)
+		}
+
+		return ctx.JSON(http.StatusOK, map[string]any{
+			"members":   membersByName,
+			"companies": companiesByName,
+		})
 	}
 }
 

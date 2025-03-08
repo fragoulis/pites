@@ -18,30 +18,46 @@ import (
 
 var ErrStreetIDCast = errors.New("failed to cast street id to string")
 
-func Create(ctx echo.Context, app *pocketbase.PocketBase, data map[string]any) (*model.Company, error) {
-	// Fill the city id
-	streetID, ok := data["address_street_id"].(string)
-	if !ok {
-		return nil, ErrStreetIDCast
-	}
-
-	if streetID != "" {
-		street, err := address.FindStreetByID(app.Dao(), streetID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to find street: %w", err)
+func Create(ctx echo.Context, app *pocketbase.PocketBase, dao *daos.Dao, data map[string]any) (*model.Company, error) {
+	if data["address_street_id"] != nil {
+		// Fill the city id
+		streetID, ok := data["address_street_id"].(string)
+		if !ok {
+			return nil, ErrStreetIDCast
 		}
 
-		data["address_city_id"] = street.CityID
+		if streetID != "" {
+			street, err := address.FindStreetByID(dao, streetID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to find street: %w", err)
+			}
+
+			data["address_city_id"] = street.CityID
+		}
+	} else if data["address_city_id"] != nil {
+		cityID, ok := data["address_city_id"].(string)
+		if !ok {
+			return nil, ErrStreetIDCast
+		}
+
+		if cityID != "" {
+			city, err := address.FindCityByID(dao, cityID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to find city: %w", err)
+			}
+
+			data["address_city_id"] = city.GetId()
+		}
 	}
 
-	collection, err := app.Dao().FindCollectionByNameOrId("companies")
+	collection, err := dao.FindCollectionByNameOrId("companies")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find collection: %w", err)
 	}
 
 	var newRec *models.Record
 
-	err = app.Dao().RunInTransaction(func(tx *daos.Dao) error {
+	err = dao.RunInTransaction(func(tx *daos.Dao) error {
 		ctx.Set("dao", tx)
 
 		record := models.NewRecord(collection)

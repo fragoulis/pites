@@ -25,6 +25,10 @@ func Normalize(value string) string {
 	return value
 }
 
+func Equal(a, b string) bool {
+	return Normalize(a) == Normalize(b)
+}
+
 func Year(value time.Time) string {
 	if value.IsZero() {
 		return ""

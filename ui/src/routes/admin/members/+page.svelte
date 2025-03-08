@@ -14,6 +14,10 @@
 				<PlusOutline class="w-4 h-4 me-2" />
 				<span class="font-bold">Νέο μέλος</span>
 			</Button>
+			<Button href="/admin/members/import">
+				<PlusOutline class="w-4 h-4 me-2" />
+				<span class="font-bold">Εισαγωγή</span>
+			</Button>
 		{/if}
 	</svelte:fragment>
 </PageHeader>

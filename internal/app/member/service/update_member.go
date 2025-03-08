@@ -9,22 +9,26 @@ import (
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
 
+	"github.com/fragoulis/setip_v2/internal/app/member/model"
 	"github.com/fragoulis/setip_v2/internal/events"
 )
 
 func UpdateMember(
 	ctx echo.Context,
 	app *pocketbase.PocketBase,
+	dao *daos.Dao,
 	member *models.Record,
 	data *UpdateMemberRequest,
-) error {
+) (*model.Member, error) {
 	// Run our custom validations and return early on failure.
 	errs := data.Validate()
 	if len(errs) != 0 {
-		return errs
+		return nil, errs
 	}
 
-	return app.Dao().RunInTransaction(func(tx *daos.Dao) error {
+	var updatedRec *models.Record
+
+	err := dao.RunInTransaction(func(tx *daos.Dao) error {
 		ctx.Set("dao", tx)
 
 		form := forms.NewRecordUpsert(app, member)
@@ -40,7 +44,7 @@ func UpdateMember(
 			return fmt.Errorf("failed to load data: %w", err)
 		}
 
-		return events.WrapUpdate(
+		err = events.WrapUpdate(
 			ctx,
 			app,
 			member,
@@ -58,5 +62,22 @@ func UpdateMember(
 				return member, nil
 			},
 		)
+		if err != nil {
+			//nolint:wrapcheck
+			return err
+		}
+
+		// Fetch newly updated record
+		updatedRec, err = tx.FindRecordById("members", member.GetId())
+		if err != nil {
+			return fmt.Errorf("failed to find updated record: %w", err)
+		}
+
+		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewFromRecord(updatedRec, nil, nil, nil, nil), nil
 }
