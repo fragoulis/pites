@@ -31,6 +31,7 @@ const config = {
 				'/admin/assemblies/create',
 				'/admin/companies/create',
 				'/admin/members/create',
+				'/admin/members/import',
 				'/admin/payments',
 				'/admin/payment/edit',
 				'/login',

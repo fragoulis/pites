@@ -90,7 +90,7 @@ func Create(app *pocketbase.PocketBase) func(echo.Context) error {
 			return apis.NewBadRequestError("failed to copy data", err)
 		}
 
-		model, err := service.Create(ctx, app, data)
+		model, err := service.Create(ctx, app, app.Dao(), data)
 		if err != nil {
 			return apis.NewBadRequestError("failed to create company", err)
 		}

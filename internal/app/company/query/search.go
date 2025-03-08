@@ -20,14 +20,23 @@ const DefaultListCount = 50
 func Search(ctx echo.Context, dao *daos.Dao, request *ListCompaniesRequest) ([]*model.Company, error) {
 	records := []*models.Record{}
 
-	query := dao.RecordQuery("companies").
-		Where(dbx.Like("name", utils.Normalize(request.Query)))
+	query := dao.RecordQuery("companies")
 
-	if len(request.BusinessTypeIDs) > 0 {
+	if request != nil && request.Query != "" {
+		query = query.Where(dbx.Like("name", utils.Normalize(request.Query)))
+	}
+
+	if request != nil && len(request.BusinessTypeIDs) > 0 {
 		query = query.AndWhere(dbx.In("business_type_id", list.ToInterfaceSlice(request.BusinessTypeIDs)...))
 	}
 
-	err := query.Limit(DefaultListCount).
+	limit := DefaultListCount
+	if request != nil && request.Limit > 0 {
+		limit = request.Limit
+	}
+
+	err := query.
+		Limit(int64(limit)).
 		OrderBy("name ASC").
 		All(&records)
 	if err != nil {

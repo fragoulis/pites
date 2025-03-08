@@ -232,3 +232,7 @@ export type Chapter = {
 	raw_city_query?: string;
 	city_ids?: string[];
 };
+
+export type ImportMembersForm = {
+	file?: string;
+};

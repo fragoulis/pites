@@ -9,22 +9,25 @@ import (
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
 
+	"github.com/fragoulis/setip_v2/internal/app/member/model"
 	"github.com/fragoulis/setip_v2/internal/events"
 )
 
 func CreateMember(
 	ctx echo.Context,
 	app *pocketbase.PocketBase,
+	dao *daos.Dao,
 	data *CreateMemberRequest,
-) error {
+) (*model.Member, error) {
 	// Run our custom validations and return early on failure.
 	errs := data.Validate()
 	if len(errs) != 0 {
-		return errs
+		return nil, errs
 	}
 
-	//nolint:wrapcheck
-	return app.Dao().RunInTransaction(func(tx *daos.Dao) error {
+	var newRec *models.Record
+
+	err := dao.RunInTransaction(func(tx *daos.Dao) error {
 		ctx.Set("dao", tx)
 
 		collection, err := tx.FindCollectionByNameOrId("members")
@@ -32,9 +35,8 @@ func CreateMember(
 			return fmt.Errorf("failed to find collection: %w", err)
 		}
 
-		newMember := models.NewRecord(collection)
-
-		form := forms.NewRecordUpsert(app, newMember)
+		record := models.NewRecord(collection)
+		form := forms.NewRecordUpsert(app, record)
 		form.SetDao(tx)
 
 		formData, err := data.ToUpdateRequest().ToFormData(tx)
@@ -55,7 +57,7 @@ func CreateMember(
 		err = events.WrapCreate(
 			ctx,
 			app,
-			newMember,
+			record,
 			func() error {
 				return form.Submit()
 			},
@@ -66,7 +68,7 @@ func CreateMember(
 		}
 
 		// Create subscription
-		err = CreateSubscription(ctx, app, newMember, &CreateSubscriptionRequest{
+		err = CreateSubscription(ctx, app, record, &CreateSubscriptionRequest{
 			FeePaid:   data.FeePaid,
 			StartDate: data.StartDate,
 		})
@@ -74,6 +76,17 @@ func CreateMember(
 			return fmt.Errorf("failed to create subscription: %w", err)
 		}
 
+		// Fetch newly created record
+		newRec, err = tx.FindRecordById("members", record.GetId())
+		if err != nil {
+			return fmt.Errorf("failed to find new record: %w", err)
+		}
+
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewFromRecord(newRec, nil, nil, nil, nil), nil
 }
