@@ -9,7 +9,7 @@ import (
 	"github.com/fragoulis/setip_v2/internal/app/member/model"
 )
 
-//nolint:funlen,cyclop,mnd
+//nolint:funlen,gocyclo,mnd
 func Export(destFile *os.File, members []*model.Member, columns []string) error {
 	file := excelize.NewFile()
 	defer func() {

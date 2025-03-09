@@ -23,6 +23,7 @@ linters:
     - err113
     - gocognit
     - cyclop
+    - funlen
 linters-settings:
   tagliatelle:
     case:

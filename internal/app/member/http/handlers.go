@@ -28,6 +28,7 @@ func Search(app *pocketbase.PocketBase) func(echo.Context) error {
 		ctx.Set("dao", app.Dao())
 
 		searchParams := query.NewSearchParams(ctx.QueryParams())
+
 		searchParams, err := prepareMembersearch(app.Dao(), searchParams)
 		if err != nil {
 			return apis.NewBadRequestError("failed to prepare query", err)

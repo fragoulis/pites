@@ -1,6 +1,7 @@
 package address
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -59,7 +60,7 @@ func FindStreetByName(dao *daos.Dao, name string, city *City) (*Street, error) {
 	model := &Street{}
 
 	if name == "" {
-		return nil, fmt.Errorf("name is empty")
+		return nil, errors.New("name is empty")
 	}
 
 	err := StreetQuery(dao).
@@ -92,7 +93,7 @@ func FindCityByName(dao *daos.Dao, name string) (*City, error) {
 	model := &City{}
 
 	if name == "" {
-		return nil, fmt.Errorf("name is empty")
+		return nil, errors.New("name is empty")
 	}
 
 	err := CityQuery(dao).

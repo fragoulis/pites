@@ -18,6 +18,7 @@ import (
 
 var ErrStreetIDCast = errors.New("failed to cast street id to string")
 
+//nolint:nestif
 func Create(ctx echo.Context, app *pocketbase.PocketBase, dao *daos.Dao, data map[string]any) (*model.Company, error) {
 	if data["address_street_id"] != nil {
 		// Fill the city id

@@ -122,8 +122,10 @@ func Import(ctx echo.Context, app *pocketbase.PocketBase, src io.Reader) (Member
 		existingMembersByNo[no] = member
 	}
 
-	var membersByNo MembersByNo
-	var companiesByName CompaniesByName
+	var (
+		membersByNo     MembersByNo
+		companiesByName CompaniesByName
+	)
 
 	// Persist data
 	err = app.Dao().RunInTransaction(func(tx *daos.Dao) error {
