@@ -1,6 +1,6 @@
 <p align="center">
-    <a href="https://github.com/fragoulis/setip_v2/actions/workflows/lint.yml" target="_blank" rel="noopener"><img src="https://github.com/fragoulis/setip_v2/actions/workflows/lint.yml/badge.svg" alt="build" /></a>
-    <a href="https://github.com/fragoulis/setip_v2/actions/workflows/test.yml" target="_blank" rel="noopener"><img src="https://github.com/fragoulis/setip_v2/actions/workflows/test.yml/badge.svg" alt="build" /></a>
+    <a href="https://github.com/fragoulis/pites/actions/workflows/lint.yml" target="_blank" rel="noopener"><img src="https://github.com/fragoulis/pites/actions/workflows/lint.yml/badge.svg" alt="build" /></a>
+    <a href="https://github.com/fragoulis/pites/actions/workflows/test.yml" target="_blank" rel="noopener"><img src="https://github.com/fragoulis/pites/actions/workflows/test.yml/badge.svg" alt="build" /></a>
 </p>
 
 # Create a user
