@@ -17,7 +17,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22.2"
-      - name: Setup
+      - name: Tidy
         run: go mod tidy
-      - name: Run tests
+      - name: Vendor
+        run: go mod vendor
+      - name: Test
         run: make test
