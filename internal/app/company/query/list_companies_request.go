@@ -13,7 +13,10 @@ type ListCompaniesRequest struct {
 }
 
 func NewListCompaniesRequestFromQueryParams(values url.Values) *ListCompaniesRequest {
-	limit, _ := strconv.Atoi(values["limit"][0])
+	var limit int
+	if len(values["limit"]) > 0 {
+		limit, _ = strconv.Atoi(values["limit"][0])
+	}
 
 	return &ListCompaniesRequest{
 		Query:           values.Get("q"),
