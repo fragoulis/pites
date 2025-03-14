@@ -1,3 +1,5 @@
+BINARY=`git branch --show-current`
+
 dev:
 	@hivemind
 
@@ -16,7 +18,7 @@ linux:
 	go build -o bin/server
 
 windows:
-	GOOS=windows GOARCH=amd64 go build -o bin/server.exe
+	GOOS=windows GOARCH=amd64 go build -o bin/${BINARY}.exe
 
 build_all: assets linux windows
 
