@@ -57,6 +57,10 @@ var (
 	companyStreetNoIndex = 11
 )
 
+const (
+	maxNumCols = 23
+)
+
 type (
 	CompanyGroupsByName map[string]*companymodel.Company
 	CompaniesByName     map[string]*companymodel.Company
@@ -127,6 +131,8 @@ func Import(ctx echo.Context, app *pocketbase.PocketBase, src io.Reader) (Member
 		companiesByName CompaniesByName
 	)
 
+	rows = rows[1:]
+
 	// Persist data
 	err = app.Dao().RunInTransaction(func(tx *daos.Dao) error {
 		ctx.Set("dao", tx)
@@ -183,8 +189,15 @@ func persistCompanyGroups(
 ) (CompanyGroupsByName, error) {
 	companyGroups := make(map[string]struct{})
 
-	for idx, row := range rows {
-		if idx == 0 {
+	for _, row := range rows {
+		// Make sure all rows have the same number of columns
+		numCols := len(row)
+
+		for i := numCols; i < maxNumCols+1; i++ {
+			row = append(row, "")
+		}
+
+		if row[companyGroupIndex] == "" {
 			continue
 		}
 
@@ -227,29 +240,50 @@ func persistCompanies(
 		streetNo string
 		parentID string
 		parent   string
+		name     string
 	}
 
 	companies := make(map[string]companySpec)
 
-	for idx, row := range rows {
-		if idx == 0 {
+	for _, row := range rows {
+		// Make sure all rows have the same number of columns
+		numCols := len(row)
+
+		for i := numCols; i < maxNumCols+1; i++ {
+			row = append(row, "")
+		}
+
+		if row[companyNameIndex] == "" {
 			continue
 		}
 
 		groupName := utils.Normalize(row[companyGroupIndex])
-		parentID := companyGroupsByName[groupName].ID
+		parentID := ""
+
+		if groupName != "" {
+			parentID = companyGroupsByName[groupName].ID
+		}
+
+		var city *dbaddress.City
 
 		cityName := utils.Normalize(row[companyCityIndex])
+		cityID := ""
 
-		city, err := dbaddress.FindCityByName(tx, cityName)
-		if err != nil {
-			return nil, fmt.Errorf("find city: %w", err)
+		if cityName != "" {
+			var err error
+
+			city, err = dbaddress.FindCityByName(tx, cityName)
+			if err != nil {
+				return nil, fmt.Errorf("find city: %w", err)
+			}
+
+			cityID = city.GetId()
 		}
 
 		streetID := ""
 		streetName := utils.Normalize(row[companyStreetIndex])
 
-		if streetName != "" {
+		if streetName != "" && city != nil {
 			street, err := dbaddress.FindStreetByName(tx, streetName, city)
 			if err != nil {
 				return nil, fmt.Errorf("find street: %w", err)
@@ -258,10 +292,18 @@ func persistCompanies(
 			streetID = street.GetId()
 		}
 
-		companies[utils.Normalize(row[companyNameIndex])] = companySpec{
+		companyName := utils.Normalize(row[companyNameIndex])
+		key := companyName
+
+		if parentID != "" {
+			key = groupName + companyName
+		}
+
+		companies[key] = companySpec{
+			name:     companyName,
 			parent:   groupName,
 			parentID: parentID,
-			cityID:   city.GetId(),
+			cityID:   cityID,
 			streetID: streetID,
 			streetNo: utils.Normalize(row[companyStreetNoIndex]),
 		}
@@ -269,12 +311,7 @@ func persistCompanies(
 
 	companyRecords := make(CompaniesByName)
 
-	for name, spec := range companies {
-		key := name
-		if spec.parentID != "" {
-			key = spec.parent + name
-		}
-
+	for key, spec := range companies {
 		if companyRecord, exists := existingCompaniesByName[key]; exists {
 			companyRecords[key] = companyRecord
 
@@ -282,7 +319,7 @@ func persistCompanies(
 		}
 
 		companyRecord, err := companyservice.Create(ctx, app, tx, map[string]any{
-			"name":              name,
+			"name":              spec.name,
 			"parent_id":         spec.parentID,
 			"address_street_id": spec.streetID,
 			"address_city_id":   spec.cityID,
@@ -292,7 +329,7 @@ func persistCompanies(
 			return nil, fmt.Errorf("create company %q: %w", key, err)
 		}
 
-		companyRecords[companyRecord.Name] = companyRecord
+		companyRecords[key] = companyRecord
 	}
 
 	return companyRecords, nil
@@ -308,87 +345,127 @@ func persistMembers(
 ) (MembersByNo, error) {
 	membersByNo := make(MembersByNo)
 
-	for idx, row := range rows {
-		if idx == 0 {
+	for _, row := range rows {
+		// Make sure all rows have the same number of columns
+		numCols := len(row)
+
+		for i := numCols; i < maxNumCols; i++ {
+			row = append(row, "")
+		}
+
+		memberNoRaw := utils.Normalize(row[0])
+		firstName := utils.Normalize(row[1])
+		lastName := utils.Normalize(row[2])
+		fatherName := utils.Normalize(row[3])
+		cityName := utils.Normalize(row[4])
+		streetName := utils.Normalize(row[5])
+		addressStreetNo := utils.Normalize(row[6])
+		companyGroup := utils.Normalize(row[companyGroupIndex])
+		companyName := utils.Normalize(row[companyNameIndex])
+		specialty := utils.Normalize(row[13])
+		email := utils.Normalize(row[14])
+		mobile := utils.Normalize(row[15])
+		phone := utils.Normalize(row[16])
+		birthdateRaw := utils.Normalize(row[17])
+		idCardNumber := utils.Normalize(row[18])
+		socialSecurityNum := utils.Normalize(row[19])
+		comments := utils.Normalize(row[20])
+		registrationRaw := utils.Normalize(row[21])
+		paidUntilRaw := utils.Normalize(row[22])
+
+		var err error
+
+		var birthdate time.Time
+		if birthdateRaw != "" {
+			birthdate, err = time.Parse("02/01/2006", birthdateRaw)
+			if err != nil {
+				return nil, fmt.Errorf("parse birthdate: %w", err)
+			}
+		}
+
+		var registration time.Time
+		if registrationRaw != "" {
+			registration, err = time.Parse("01/2006", registrationRaw)
+			if err != nil {
+				return nil, fmt.Errorf("parse registration: %w", err)
+			}
+		}
+
+		var paidUntil time.Time
+		if paidUntilRaw != "" {
+			paidUntil, err = time.Parse("01/2006", paidUntilRaw)
+			if err != nil {
+				return nil, fmt.Errorf("parse paidUntil: %w", err)
+			}
+		}
+
+		var memberNo int
+		if memberNoRaw != "" {
+			memberNo, err = strconv.Atoi(memberNoRaw)
+			if err != nil {
+				return nil, fmt.Errorf("member no %q is not a number", row[0])
+			}
+		}
+
+		if memberNoRaw == "" || firstName == "" || lastName == "" || registration.IsZero() {
 			continue
 		}
 
 		// Company
-		companyName := utils.Normalize(row[companyNameIndex])
-		companyGroup := utils.Normalize(row[companyGroupIndex])
+		companyID := ""
 
 		companyKey := companyName
 		if companyGroup != "" {
 			companyKey = companyGroup + companyName
 		}
 
-		company, ok := companiesByName[companyKey]
-		if !ok {
-			return nil, fmt.Errorf("company %q not found", companyKey)
-		}
-
-		companyID := company.ID
-
-		// City
-		cityName := utils.Normalize(row[4])
-
-		city, err := dbaddress.FindCityByName(tx, cityName)
-		if err != nil {
-			return nil, fmt.Errorf("find city: %w", err)
-		}
-
-		// Street
-		streetID := ""
-
-		streetName := utils.Normalize(row[5])
-		if streetName != "" {
-			street, err := dbaddress.FindStreetByName(tx, streetName, city)
-			if err != nil {
-				return nil, fmt.Errorf("find street: %w", err)
+		if companyKey != "" {
+			company, ok := companiesByName[companyKey]
+			if !ok {
+				return nil, fmt.Errorf("company %q not found", companyKey)
 			}
 
-			streetID = street.GetId()
+			companyID = company.ID
 		}
 
-		// Birthdate
-		birthdate, err := time.Parse("02/01/2006", utils.Normalize(row[17]))
-		if err != nil {
-			return nil, fmt.Errorf("parse birthdate: %w", err)
-		}
+		// City/Street
+		cityID := ""
+		streetID := ""
 
-		// Registration
-		registration, err := time.Parse("01/2006", utils.Normalize(row[21]))
-		if err != nil {
-			return nil, fmt.Errorf("parse registration: %w", err)
-		}
+		if cityName != "" {
+			city, err := dbaddress.FindCityByName(tx, cityName)
+			if err != nil {
+				return nil, fmt.Errorf("find city: %w", err)
+			}
 
-		// Paid until
-		paidUntil, err := time.Parse("01/2006", utils.Normalize(row[22]))
-		if err != nil {
-			return nil, fmt.Errorf("parse paidUntil: %w", err)
-		}
+			cityID = city.GetId()
 
-		memberNo, err := strconv.Atoi(utils.Normalize(row[0]))
-		if err != nil {
-			return nil, fmt.Errorf("member no %q is not a number", row[0])
+			if streetName != "" {
+				street, err := dbaddress.FindStreetByName(tx, streetName, city)
+				if err != nil {
+					return nil, fmt.Errorf("find street: %w", err)
+				}
+
+				streetID = street.GetId()
+			}
 		}
 
 		updateRequest := UpdateMemberRequest{
-			FirstName:         utils.Normalize(row[1]),
-			LastName:          utils.Normalize(row[2]),
-			FatherName:        utils.Normalize(row[3]),
-			AddressCityID:     city.GetId(),
+			FirstName:         firstName,
+			LastName:          lastName,
+			FatherName:        fatherName,
+			AddressCityID:     cityID,
 			AddressStreetID:   streetID,
-			AddressStreetNo:   utils.Normalize(row[6]),
+			AddressStreetNo:   addressStreetNo,
 			CompanyID:         companyID,
-			Specialty:         utils.Normalize(row[13]),
-			Email:             utils.Normalize(row[14]),
-			Mobile:            utils.Normalize(row[15]),
-			Phone:             utils.Normalize(row[16]),
+			Specialty:         specialty,
+			Email:             email,
+			Mobile:            mobile,
+			Phone:             phone,
 			Birthdate:         birthdate.Format("2006-01-02"),
-			IDCardNumber:      utils.Normalize(row[18]),
-			SocialSecurityNum: utils.Normalize(row[19]),
-			Comments:          row[20],
+			IDCardNumber:      idCardNumber,
+			SocialSecurityNum: socialSecurityNum,
+			Comments:          comments,
 		}
 
 		var rec *membermodel.Member
@@ -432,14 +509,16 @@ func persistMembers(
 			return nil, fmt.Errorf("invalid paid until: %w", err)
 		}
 
-		_, err = paymentservice.Create(ctx, app, &paymentservice.CreatePaymentRequest{
-			MemberID: rec.ID,
-			Months:   months,
-			IssuedAt: time.Now().Format(time.DateOnly),
-			Comments: "ΑΡΧΙΚΗ ΕΙΣΑΓΩΓΗ",
-		})
-		if err != nil {
-			return nil, fmt.Errorf("create payment %v: %w", row, err)
+		if months > 0 {
+			_, err = paymentservice.Create(ctx, app, &paymentservice.CreatePaymentRequest{
+				MemberID: rec.ID,
+				Months:   months,
+				IssuedAt: time.Now().Format(time.DateOnly),
+				Comments: "ΑΡΧΙΚΗ ΕΙΣΑΓΩΓΗ",
+			})
+			if err != nil {
+				return nil, fmt.Errorf("create payment %v: %w", row, err)
+			}
 		}
 
 		membersByNo[memberNo] = rec
