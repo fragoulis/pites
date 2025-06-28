@@ -17,9 +17,11 @@
 
 	export const refresh = async () => {
 		try {
-			records = await pb.send('/payments', {
+			const res = await pb.send('/payments', {
 				query: { user_ids: [loggedInUserID()] }
 			});
+
+			records = res.records;
 		} catch (e: any) {
 			console.error(e);
 		}
