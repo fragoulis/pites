@@ -8,28 +8,51 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/tools/rest"
 
+	"github.com/fragoulis/setip_v2/internal/app/payment/model"
 	"github.com/fragoulis/setip_v2/internal/app/payment/query"
 	"github.com/fragoulis/setip_v2/internal/app/payment/service"
 )
+
+type ListResponse struct {
+	Records []*model.Payment `json:"records"`
+	Total   int              `json:"total"`
+}
 
 func List(app *pocketbase.PocketBase) func(echo.Context) error {
 	return func(ctx echo.Context) error {
 		request := query.NewListPaymentsRequest(ctx.QueryParams())
 
-		models, err := query.List(ctx, app, request)
+		ctx.Set("dao", app.Dao())
+
+		models, err := query.List(ctx, request)
 		if err != nil {
 			return apis.NewBadRequestError("failed to list payments", err)
 		}
 
-		if request.ID != "" {
-			if len(models) > 0 {
-				return ctx.JSON(http.StatusOK, models[0])
-			}
-
-			return ctx.JSON(http.StatusNotFound, nil)
+		count, err := query.Count(ctx, request)
+		if err != nil {
+			return apis.NewBadRequestError("failed to count payments", err)
 		}
 
-		return ctx.JSON(http.StatusOK, models)
+		return ctx.JSON(http.StatusOK, &ListResponse{
+			Records: models,
+			Total:   count,
+		})
+	}
+}
+
+func Get(app *pocketbase.PocketBase) func(echo.Context) error {
+	return func(ctx echo.Context) error {
+		id := ctx.PathParam("id")
+
+		ctx.Set("dao", app.Dao())
+
+		model, err := query.FindByID(ctx, id)
+		if err != nil {
+			return apis.NewNotFoundError("failed to find payment", err)
+		}
+
+		return ctx.JSON(http.StatusOK, model)
 	}
 }
 
