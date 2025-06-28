@@ -24,6 +24,7 @@ type Payment struct {
 	Months            int       `json:"months"`
 	ReceiptBlockNo    int       `json:"receipt_block_no"`
 	ReceiptNo         int       `json:"receipt_no"`
+	ReceiptID         string    `json:"receipt_id"`
 	CreatedByUserID   string    `json:"created_by_user_id"`
 	CreatedByUser     *User     `json:"created_by_user"`
 	IssuedAt          time.Time `json:"issued_at"`
@@ -44,6 +45,16 @@ func NewFromRecord(rec *models.Record) *Payment {
 }
 
 func NewFromRecordNoMember(rec *models.Record, memberNo, memberName string) *Payment {
+	receipt := rec.ExpandedOne("receipt_id")
+
+	receiptBlockNo := 0
+	receiptNo := 0
+
+	if receipt != nil {
+		receiptBlockNo = receipt.GetInt("block_no")
+		receiptNo = receipt.GetInt("receipt_no")
+	}
+
 	return &Payment{
 		ID:                rec.GetId(),
 		MemberID:          rec.GetString("member_id"),
@@ -51,8 +62,9 @@ func NewFromRecordNoMember(rec *models.Record, memberNo, memberName string) *Pay
 		MemberName:        memberName,
 		Amount:            rec.GetInt("amount_in_euros"),
 		Months:            rec.GetInt("months"),
-		ReceiptBlockNo:    rec.GetInt("receipt_block_no"),
-		ReceiptNo:         rec.GetInt("receipt_no"),
+		ReceiptBlockNo:    receiptBlockNo,
+		ReceiptNo:         receiptNo,
+		ReceiptID:         rec.GetString("receipt_id"),
 		CreatedByUserID:   rec.GetString("created_by_user_id"),
 		CreatedByUser:     newUserFromRecord(rec.ExpandedOne("created_by_user_id")),
 		IssuedAt:          rec.GetDateTime("issued_at").Time(),
@@ -86,6 +98,7 @@ func FindByMemberID(ctx echo.Context, memberIDs []string) ([]*Payment, error) {
 			dao,
 			records,
 			"member_id",
+			"receipt_id",
 			"created_by_user_id",
 		)
 		if err != nil {
