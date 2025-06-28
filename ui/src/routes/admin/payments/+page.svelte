@@ -17,7 +17,7 @@
 				<PlusOutline class="w-4 h-4 me-2" />
 				<span class="font-bold">Νέα πληρωμή</span>
 			</Button>
-		{/if}C LIMIT 500 OFFSE
+		{/if}
 	</svelte:fragment>
 </PageHeader>
 
