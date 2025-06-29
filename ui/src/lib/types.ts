@@ -23,6 +23,7 @@ export type Payment = {
 	months: number;
 	receipt_block_no: number;
 	receipt_no: number;
+	receipt_id: string;
 	created_by_user: User;
 	issued_at: Date;
 	issued_at_formatted: string;
@@ -42,6 +43,14 @@ export type CreatePaymentForm = {
 	issued_at?: string;
 	comments?: string;
 	name?: string;
+	without_receipt?: boolean;
+};
+
+export type CreatePaymentFormForBatchMembers = {
+	member_ids: string[];
+	amount: number;
+	issued_at: string;
+	comments: string;
 };
 
 export type UpdatePaymentForm = {
@@ -49,6 +58,7 @@ export type UpdatePaymentForm = {
 	receipt_block_no?: number;
 	receipt_no?: number;
 	comments?: string;
+	without_receipt?: boolean;
 };
 
 export type PaymentDetails = Payment & {
@@ -198,6 +208,7 @@ export type UpdateMemberForm = {
 	legacy_post_code?: string;
 	education?: string;
 	specialty?: string;
+	fixed_payment?: boolean;
 };
 
 export type MemberSubscriptionForm = {
@@ -220,6 +231,7 @@ export type DatatableSearchForm = {
 	business_type_ids?: string[];
 	with_comments?: boolean;
 	chapter_id?: string;
+	with_fixed_monthly_payment?: boolean;
 };
 
 export type DatatableColumns = {

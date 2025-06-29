@@ -15,21 +15,22 @@ const DefaultListCount = int64(200)
 
 //nolint:tagliatelle
 type SearchParams struct {
-	Query           string   `json:"q"`
-	MemberNo        string   `json:"member_no"`
-	Name            string   `json:"name"`
-	Mobile          string   `json:"mobile"`
-	Phone           string   `json:"phone"`
-	Email           string   `json:"email"`
-	ActiveOnly      bool     `json:"active_only"`
-	CompanyID       string   `json:"company_id"`
-	LegacyArea      string   `json:"legacy_area"`
-	AddressCityIDs  []string `json:"address_city_ids"`
-	BusinessTypeIDs []string `json:"business_type_ids"`
-	WithComments    bool     `json:"with_comments"`
-	ChapterID       string   `json:"chapter_id"`
-	Columns         []string `json:"columns"`
-	Limit           int64    `json:"limit"`
+	Query                   string   `json:"q"`
+	MemberNo                string   `json:"member_no"`
+	Name                    string   `json:"name"`
+	Mobile                  string   `json:"mobile"`
+	Phone                   string   `json:"phone"`
+	Email                   string   `json:"email"`
+	ActiveOnly              bool     `json:"active_only"`
+	CompanyID               string   `json:"company_id"`
+	LegacyArea              string   `json:"legacy_area"`
+	AddressCityIDs          []string `json:"address_city_ids"`
+	BusinessTypeIDs         []string `json:"business_type_ids"`
+	WithComments            bool     `json:"with_comments"`
+	ChapterID               string   `json:"chapter_id"`
+	Columns                 []string `json:"columns"`
+	Limit                   int64    `json:"limit"`
+	WithFixedMonthlyPayment bool     `json:"with_fixed_monthly_payment"`
 }
 
 func (p *SearchParams) CompanyIDs() []string {
@@ -60,20 +61,21 @@ func NewSearchParams(values url.Values) *SearchParams {
 	}
 
 	return &SearchParams{
-		Query:           values.Get("q"),
-		MemberNo:        values.Get("member_no"),
-		Name:            values.Get("name"),
-		Mobile:          values.Get("mobile"),
-		Phone:           values.Get("phone"),
-		Email:           values.Get("email"),
-		ActiveOnly:      values.Get("active_only") != "false",
-		CompanyID:       values.Get("company_id"),
-		LegacyArea:      values.Get("legacy_area"),
-		AddressCityIDs:  values["address_city_ids"],
-		BusinessTypeIDs: values["business_type_ids"],
-		WithComments:    values.Get("with_comments") == "true",
-		ChapterID:       values.Get("chapter_id"),
-		Limit:           int64(limit),
+		Query:                   values.Get("q"),
+		MemberNo:                values.Get("member_no"),
+		Name:                    values.Get("name"),
+		Mobile:                  values.Get("mobile"),
+		Phone:                   values.Get("phone"),
+		Email:                   values.Get("email"),
+		ActiveOnly:              values.Get("active_only") != "false",
+		CompanyID:               values.Get("company_id"),
+		LegacyArea:              values.Get("legacy_area"),
+		AddressCityIDs:          values["address_city_ids"],
+		BusinessTypeIDs:         values["business_type_ids"],
+		WithComments:            values.Get("with_comments") == "true",
+		ChapterID:               values.Get("chapter_id"),
+		WithFixedMonthlyPayment: values.Get("with_fixed_monthly_payment") == "true",
+		Limit:                   int64(limit),
 	}
 }
 
@@ -184,6 +186,10 @@ func (p *SearchParams) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 		}
 
 		expr = dbx.And(expr, dbx.Or(addressExpr...))
+	}
+
+	if p.WithFixedMonthlyPayment {
+		expr = dbx.And(expr, dbx.NewExp("members.fixed_monthly_amount_in_euros > 0"))
 	}
 
 	return query.Distinct(true).Where(expr)

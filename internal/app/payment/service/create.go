@@ -39,6 +39,12 @@ var requiredReceiptBlockNo = validation.NewError(
 	"Το πεδίο πρέπει να συμπληρωθεί αφού υπάρχει αριθμός απόδειξης.",
 )
 
+//nolint:gochecknoglobals
+var cannotEditPayment = validation.NewError(
+	"validation_required",
+	"Η είσπραξη ή/και η απόδειξη δε μπορούν να τροποποιηθούν γιατί η απόδειξη είναι κοινή για παραπάνω από μία εισπράξεις.",
+)
+
 //
 //nolint:gochecknoglobals
 var invalidAmount = validation.NewError(
@@ -58,6 +64,7 @@ type CreatePaymentRequest struct {
 	ReceiptNo               int    `json:"receipt_no"`
 	IssuedAt                string `json:"issued_at"`
 	Comments                string `json:"comments"`
+	WithoutReceipt          bool   `json:"without_receipt"`
 }
 
 type CreatePaymentResponse struct {
@@ -93,7 +100,7 @@ func Create(
 			errs["amount"] = insufficientAmount
 		}
 
-		if data.ReceiptNo > 0 && data.ReceiptBlockNo <= 0 {
+		if !data.WithoutReceipt && data.ReceiptNo > 0 && data.ReceiptBlockNo <= 0 {
 			errs["receipt_block_no"] = requiredReceiptBlockNo
 		}
 	}
@@ -117,12 +124,17 @@ func Create(
 		data.Months = int(math.Floor(float64(data.Amount) / float64(subscriptionFee)))
 	}
 
-	collection, err := app.Dao().FindCollectionByNameOrId("payments")
+	paymentsCollection, err := app.Dao().FindCollectionByNameOrId("payments")
 	if err != nil {
-		return nil, fmt.Errorf("failed to find collection: %w", err)
+		return nil, fmt.Errorf("failed to find payments collection: %w", err)
 	}
 
-	newPayment := models.NewRecord(collection)
+	newPayment := models.NewRecord(paymentsCollection)
+
+	receiptsCollection, err := app.Dao().FindCollectionByNameOrId("receipts")
+	if err != nil {
+		return nil, fmt.Errorf("failed to find receipts collection: %w", err)
+	}
 
 	member, err := query.FindByID(ctx, data.MemberID)
 	if err != nil {
@@ -171,10 +183,46 @@ Unknown error: %s`, err)
 	err = dao.RunInTransaction(func(tx *daos.Dao) error {
 		ctx.Set("dao", tx)
 
+		newReceipt := models.NewRecord(receiptsCollection)
+
+		if !data.WithoutReceipt {
+			form := forms.NewRecordUpsert(app, newReceipt)
+			form.SetDao(tx)
+
+			newReceiptData := map[string]any{
+				"member_id":          data.MemberID,
+				"amount_in_euros":    data.Amount,
+				"issued_at":          issuedAt,
+				"comments":           data.Comments,
+				"created_by_user_id": utils.CurrentUserID(ctx),
+			}
+
+			if data.ReceiptNo > 0 {
+				newReceiptData["receipt_no"] = data.ReceiptNo
+			}
+
+			if data.ReceiptBlockNo > 0 {
+				newReceiptData["block_no"] = data.ReceiptBlockNo
+			}
+
+			err := form.LoadData(newReceiptData)
+			if err != nil {
+				return fmt.Errorf("failed to load receipt data: %w", err)
+			}
+
+			err = events.WrapCreate(ctx, app, newPayment, func() error {
+				return form.Submit()
+			})
+			if err != nil {
+				//nolint:wrapcheck
+				return err
+			}
+		}
+
 		form := forms.NewRecordUpsert(app, newPayment)
 		form.SetDao(tx)
 
-		newData := map[string]any{
+		newPaymentData := map[string]any{
 			"member_id":                 data.MemberID,
 			"amount_in_euros":           data.Amount,
 			"months":                    data.Months,
@@ -182,23 +230,16 @@ Unknown error: %s`, err)
 			"issued_at":                 issuedAt,
 			"comments":                  data.Comments,
 			"created_by_user_id":        utils.CurrentUserID(ctx),
+			"receipt_id":                newReceipt.GetId(),
 		}
 
 		if !memberHasPaidUntil.IsZero() {
-			newData["legacy_to"] = utils.EndOfMonthAhead(memberHasPaidUntil, data.Months)
+			newPaymentData["legacy_to"] = utils.EndOfMonthAhead(memberHasPaidUntil, data.Months)
 		}
 
-		if data.ReceiptNo > 0 {
-			newData["receipt_no"] = data.ReceiptNo
-		}
-
-		if data.ReceiptBlockNo > 0 {
-			newData["receipt_block_no"] = data.ReceiptBlockNo
-		}
-
-		err := form.LoadData(newData)
+		err := form.LoadData(newPaymentData)
 		if err != nil {
-			return fmt.Errorf("failed to load data: %w", err)
+			return fmt.Errorf("failed to load payment data: %w", err)
 		}
 
 		err = events.WrapCreate(ctx, app, newPayment, func() error {
@@ -207,11 +248,6 @@ Unknown error: %s`, err)
 		if err != nil {
 			//nolint:wrapcheck
 			return err
-		}
-
-		member, err = query.FindByID(ctx, data.MemberID)
-		if err != nil {
-			return fmt.Errorf("failed to find member: %w", err)
 		}
 
 		return nil

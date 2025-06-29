@@ -13,7 +13,6 @@
 	import IssuesAlert from '$lib/IssuesAlert.svelte';
 	import { Tabs, TabItem, Input } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { isAdmin } from '$lib/utils';
 	import MemberPaymentHistory from '$lib/MemberPaymentHistory.svelte';
 	import LatestCashierPayments from '$lib/LatestCashierPayments.svelte';
 
@@ -24,7 +23,8 @@
 		months: 0,
 		receipt_no: $activePayment.receipt_no,
 		receipt_block_no: $activePayment.receipt_block_no,
-		issued_at: $activePayment.issued_at == '' ? todayStr() : $activePayment.issued_at
+		issued_at: $activePayment.issued_at == '' ? todayStr() : $activePayment.issued_at,
+		without_receipt: false
 	};
 
 	let errors: CreatePaymentForm = {};
@@ -40,6 +40,7 @@
 		form.amount = 2;
 		form.months = 0;
 		form.comments = '';
+		form.without_receipt = false;
 		paymentMethod = 'amount';
 
 		if (form.receipt_no && form.receipt_no >= 1 && form.receipt_no < 50) {
@@ -178,7 +179,7 @@
 			</InputGroup>
 
 			{#if canMemberPay}
-				<div class="grid gap-4 grid-cols-2 p-5">
+				<div class="grid gap-2 grid-cols-2">
 					<div class="col-span-1">
 						<Form bind:form url="/payments" bind:errors on:success={onSuccess} on:failure>
 							<Input
@@ -193,21 +194,53 @@
 								<Tabs>
 									<TabItem open on:click={() => (paymentMethod = 'amount')}>
 										<span slot="title">Ποσό €</span>
-										<InputField
-											id="amount_in_euros"
-											type="number"
-											min={0}
-											max={1000}
-											bind:value={form.amount}
-											bind:error={errors.amount}
-											help="Το ποσό πρέπει να είναι τουλάχιστον 2€ που αντιστοιχεί στη μηνιαία συνδρομή. Αν το ποσό ειναι μονός αριθμός, η στρογγυλοποίηση γίνεται προς τα κάτω (πχ 5€ = 2 μήνες)."
-										/>
-										<div class="w-full">
-											<ToggleField
-												bind:checked={form.contains_registration_fee}
-												label="Περιέχει εγγραφή (4€)"
+
+										<InputGroup legend="Είσπραξη">
+											<InputField
+												id="amount_in_euros"
+												type="number"
+												min={0}
+												max={1000}
+												bind:value={form.amount}
+												bind:error={errors.amount}
+												help="Το ποσό πρέπει να είναι τουλάχιστον 2€ που αντιστοιχεί στη μηνιαία συνδρομή. Αν το ποσό ειναι μονός αριθμός, η στρογγυλοποίηση γίνεται προς τα κάτω (πχ 5€ = 2 μήνες)."
 											/>
-										</div>
+											<div class="w-full">
+												<ToggleField
+													bind:checked={form.contains_registration_fee}
+													label="Περιέχει εγγραφή (4€)"
+												/>
+											</div>
+										</InputGroup>
+
+										<InputGroup legend="Απόδειξη">
+											<div class="w-full">
+												<ToggleField bind:checked={form.without_receipt} label="Χωρίς απόδειξη" />
+											</div>
+
+											<div class="w-full" class:hidden={form.without_receipt}>
+												<InputField
+													id="receipt_no"
+													type="number"
+													label="Απόδειξη"
+													bind:value={form.receipt_no}
+													bind:error={errors.receipt_no}
+													min={0}
+													max={50}
+												/>
+											</div>
+											<div class="w-full" class:hidden={form.without_receipt}>
+												<InputField
+													id="receipt_block_no"
+													type="number"
+													label="Μπλοκ αποδείξεων"
+													bind:value={form.receipt_block_no}
+													bind:error={errors.receipt_block_no}
+													min={0}
+													max={1000}
+												/>
+											</div>
+										</InputGroup>
 									</TabItem>
 									<TabItem on:click={() => (paymentMethod = 'months')}>
 										<span slot="title">Μήνες</span>
@@ -227,40 +260,15 @@
 								</Tabs>
 							</div>
 
-							{#if paymentMethod == 'amount'}
-								<div class="w-full">
-									<InputField
-										id="receipt_no"
-										type="number"
-										label="Απόδειξη"
-										bind:value={form.receipt_no}
-										bind:error={errors.receipt_no}
-										min={0}
-										max={50}
-									/>
-								</div>
-								<div class="w-full">
-									<InputField
-										id="receipt_block_no"
-										type="number"
-										label="Μπλοκ αποδείξεων"
-										bind:value={form.receipt_block_no}
-										bind:error={errors.receipt_block_no}
-										min={0}
-										max={1000}
-									/>
-								</div>
-
-								<div class="w-full">
-									<InputField
-										id="issued_at"
-										type="date"
-										label="Ημ/νία Καταχώρισης"
-										bind:value={form.issued_at}
-										bind:error={errors.issued_at}
-									/>
-								</div>
-							{/if}
+							<div class="w-full">
+								<InputField
+									id="issued_at"
+									type="date"
+									label="Ημ/νία Καταχώρισης"
+									bind:value={form.issued_at}
+									bind:error={errors.issued_at}
+								/>
+							</div>
 
 							<InputField id="comments" type="textarea" label="Σχόλια" bind:value={form.comments} />
 						</Form>

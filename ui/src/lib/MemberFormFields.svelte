@@ -4,7 +4,7 @@
 	import MemberAddressTabbedFormFields from '$lib/MemberAddressTabbedFormFields.svelte';
 	import InputGroup from '$lib/InputGroup.svelte';
 	import MemberCompanyFormFields from '$lib/MemberCompanyFormFields.svelte';
-	import { type UpdateMemberForm } from '$lib/types';
+	import { type UpdateMemberForm, type Member } from '$lib/types';
 
 	export let record: Member = {};
 	export let form: UpdateMemberForm = {};
@@ -116,6 +116,10 @@
 
 <div class="w-full">
 	<ToggleField bind:checked={form.other_union} label="Μέλος άλλους σωματείου" />
+</div>
+
+<div class="w-full">
+	<ToggleField bind:checked={form.fixed_payment} label="Πληρώνει με πάγια εντολή" />
 </div>
 
 <InputGroup legend="Γενικά σχόλια">

@@ -24,15 +24,16 @@ const config = {
 		prerender: {
 			entries: [
 				'/admin/companies',
+				'/admin/companies/create',
 				'/admin/company',
 				'/admin/company/edit',
+				'/admin/members/create',
+				'/admin/members/import',
 				'/admin/member',
 				'/admin/assemblies',
 				'/admin/assemblies/create',
-				'/admin/companies/create',
-				'/admin/members/create',
-				'/admin/members/import',
 				'/admin/payments',
+				'/admin/payments/create',
 				'/admin/payment/edit',
 				'/login',
 			]
