@@ -31,7 +31,7 @@
 		loading = true;
 		pb.cancelAllRequests();
 		try {
-			record = await pb.send<Payment>(`/payments`, { query: { id: id } });
+			record = await pb.send<Payment>(`/payments/${id}`, {});
 		} catch (e: any) {
 			error = e;
 		}

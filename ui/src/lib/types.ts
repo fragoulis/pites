@@ -23,6 +23,7 @@ export type Payment = {
 	months: number;
 	receipt_block_no: number;
 	receipt_no: number;
+	receipt_id: string;
 	created_by_user: User;
 	issued_at: Date;
 	issued_at_formatted: string;
@@ -49,6 +50,7 @@ export type UpdatePaymentForm = {
 	receipt_block_no?: number;
 	receipt_no?: number;
 	comments?: string;
+	without_receipt?: boolean;
 };
 
 export type PaymentDetails = Payment & {
