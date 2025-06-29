@@ -5,7 +5,7 @@
 	import { Search, Button, Dropdown, Toggle } from 'flowbite-svelte';
 	import pb from '$lib/pocketbase';
 	import { browser } from '$app/environment';
-	import { type DatatableSearchForm, type DatatableColumns } from '$lib/types';
+	import { type DatatableSearchForm } from '$lib/types';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
 
 	export let collection: string;
@@ -13,9 +13,11 @@
 	export let loading: boolean = false;
 	export let records: any[] = [];
 	export let searchForm: any = null;
+	export let actions: any = null;
 	export let showExport: boolean = false;
 	export let availableColumns: {};
 	export let selectedColumns: {};
+	export let selectedRows: Set<string>;
 
 	let form: DatatableSearchForm = { active_only: true };
 	let total: number = 0;
@@ -175,6 +177,9 @@
 		<div class="flex items-center space-x-4 justify-between">
 			<div>Αποτελέσματα: {total}</div>
 			<div class="flex items-center space-x-4 justify-between">
+				{#if actions}
+					<svelte:component this={actions} {selectedRows} />
+				{/if}
 				<Button outline pill color="light">Στήλες<ChevronDownOutline /></Button>
 				<Dropdown class="w-56 p-3 space-y-1">
 					{#each Object.keys(availableColumns) as name}

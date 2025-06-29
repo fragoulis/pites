@@ -250,11 +250,6 @@ Unknown error: %s`, err)
 			return err
 		}
 
-		member, err = query.FindByID(ctx, data.MemberID)
-		if err != nil {
-			return fmt.Errorf("failed to find member: %w", err)
-		}
-
 		return nil
 	})
 	if err != nil {
