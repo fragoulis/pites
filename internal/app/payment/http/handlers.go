@@ -76,6 +76,26 @@ func Create(app *pocketbase.PocketBase) func(echo.Context) error {
 	}
 }
 
+func CreateBatch(app *pocketbase.PocketBase) func(echo.Context) error {
+	return func(ctx echo.Context) error {
+		ctx.Set("dao", app.Dao())
+
+		data := &service.CreateBatchPaymentRequest{}
+
+		err := rest.CopyJsonBody(ctx.Request(), &data)
+		if err != nil {
+			return apis.NewBadRequestError("failed to copy data", err)
+		}
+
+		model, err := service.CreateBatch(ctx, app, data)
+		if err != nil {
+			return apis.NewBadRequestError("failed to create batch payments", err)
+		}
+
+		return ctx.JSON(http.StatusCreated, model)
+	}
+}
+
 func Update(app *pocketbase.PocketBase) func(echo.Context) error {
 	return func(ctx echo.Context) error {
 		ctx.Set("dao", app.Dao())

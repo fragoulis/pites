@@ -43,6 +43,14 @@ export type CreatePaymentForm = {
 	issued_at?: string;
 	comments?: string;
 	name?: string;
+	without_receipt?: boolean;
+};
+
+export type CreatePaymentFormForBatchMembers = {
+	member_ids: string[];
+	amount: number;
+	issued_at: string;
+	comments: string;
 };
 
 export type UpdatePaymentForm = {
