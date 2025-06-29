@@ -22,6 +22,7 @@
 		form.address_city_ids = [];
 		form.legacy_area = '';
 		form.chapter_id = '';
+		form.with_fixed_monthly_payment = undefined;
 	};
 </script>
 
@@ -30,6 +31,13 @@
 </div>
 <div class="w-full">
 	<ToggleField name="with_comments" bind:checked={form.with_comments} label="Με σχόλια" />
+</div>
+<div class="w-full">
+	<ToggleField
+		name="with_fixed_monthly_payment"
+		bind:checked={form.with_fixed_monthly_payment}
+		label="Πληρώνουν με πάγια εντολή"
+	/>
 </div>
 
 <div class="w-full grid grid-cols-2 gap-4 px-4 pt-4 bg-gray-100 rounded-lg border">
