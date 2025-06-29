@@ -23,10 +23,6 @@
 </script>
 
 <Form bind:form url="/payments/batch" bind:errors on:success on:failure>
-	{#each form.member_ids as id}
-		{id}
-	{/each}
-
 	<div class="w-full mb-5">
 		<InputGroup legend="Είσπραξη">
 			<InputField
