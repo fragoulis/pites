@@ -223,6 +223,7 @@ export type DatatableSearchForm = {
 	business_type_ids?: string[];
 	with_comments?: boolean;
 	chapter_id?: string;
+	with_fixed_monthly_payment?: boolean;
 };
 
 export type DatatableColumns = {
