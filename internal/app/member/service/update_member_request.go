@@ -10,6 +10,10 @@ import (
 	"github.com/fragoulis/setip_v2/internal/utils"
 )
 
+const (
+	subscriptionFee = 2
+)
+
 type UpdateMemberRequest struct {
 	FirstName         string `json:"first_name"`
 	LastName          string `json:"last_name"`
@@ -28,6 +32,7 @@ type UpdateMemberRequest struct {
 	AddressStreetNo   string `json:"address_street_no"`
 	CompanyID         string `json:"company_id"`
 	Specialty         string `json:"specialty"`
+	FixedPayment      bool   `json:"fixed_payment"`
 
 	// Support unstructured addresses for the rare occussions
 	// someone lives outside of Attica.
@@ -54,29 +59,35 @@ func (r *UpdateMemberRequest) ToFormData(dao *daos.Dao) (map[string]any, error) 
 		r.AddressCityID = addressStreet.GetString("city_id")
 	}
 
+	fixedMonthlyAmount := 0
+	if r.FixedPayment {
+		fixedMonthlyAmount = subscriptionFee
+	}
+
 	return map[string]any{
-		"first_name":          firstName,
-		"last_name":           lastName,
-		"full_name":           fullName,
-		"father_name":         utils.Normalize(r.FatherName),
-		"email":               utils.Normalize(r.Email),
-		"mobile":              r.Mobile,
-		"phone":               r.Phone,
-		"birthdate":           r.Birthdate,
-		"id_card_number":      utils.Normalize(r.IDCardNumber),
-		"social_security_num": utils.Normalize(r.SocialSecurityNum),
-		"other_union":         r.OtherUnion,
-		"education":           utils.Normalize(r.Education),
-		"comments":            strconv.Quote(r.Comments),
-		"company_id":          r.CompanyID,
-		"specialty":           utils.Normalize(r.Specialty),
-		"address_city_id":     r.AddressCityID,
-		"address_street_id":   r.AddressStreetID,
-		"address_street_no":   r.AddressStreetNo,
-		"legacy_address":      utils.Normalize(r.LegacyAddress),
-		"legacy_area":         utils.Normalize(r.LegacyArea),
-		"legacy_city":         utils.Normalize(r.LegacyCity),
-		"legacy_post_code":    utils.Normalize(r.LegacyPostCode),
+		"first_name":                    firstName,
+		"last_name":                     lastName,
+		"full_name":                     fullName,
+		"father_name":                   utils.Normalize(r.FatherName),
+		"email":                         utils.Normalize(r.Email),
+		"mobile":                        r.Mobile,
+		"phone":                         r.Phone,
+		"birthdate":                     r.Birthdate,
+		"id_card_number":                utils.Normalize(r.IDCardNumber),
+		"social_security_num":           utils.Normalize(r.SocialSecurityNum),
+		"other_union":                   r.OtherUnion,
+		"education":                     utils.Normalize(r.Education),
+		"comments":                      strconv.Quote(r.Comments),
+		"company_id":                    r.CompanyID,
+		"specialty":                     utils.Normalize(r.Specialty),
+		"address_city_id":               r.AddressCityID,
+		"address_street_id":             r.AddressStreetID,
+		"address_street_no":             r.AddressStreetNo,
+		"legacy_address":                utils.Normalize(r.LegacyAddress),
+		"legacy_area":                   utils.Normalize(r.LegacyArea),
+		"legacy_city":                   utils.Normalize(r.LegacyCity),
+		"legacy_post_code":              utils.Normalize(r.LegacyPostCode),
+		"fixed_monthly_amount_in_euros": fixedMonthlyAmount,
 	}, nil
 }
 

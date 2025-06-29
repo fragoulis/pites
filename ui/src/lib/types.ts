@@ -200,6 +200,7 @@ export type UpdateMemberForm = {
 	legacy_post_code?: string;
 	education?: string;
 	specialty?: string;
+	fixed_payment?: boolean;
 };
 
 export type MemberSubscriptionForm = {
