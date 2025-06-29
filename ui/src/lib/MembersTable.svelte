@@ -4,6 +4,7 @@
 	import PaymentStatusTableColumn from '$lib/PaymentStatusTableColumn.svelte';
 	import Datatable from '$lib/Datatable.svelte';
 	import MemberSearchForm from '$lib/MemberSearchForm.svelte';
+	import MembersTableActions from '$lib/MembersTableActions.svelte';
 	import DatatableSearchForm from '$lib/DatatableSearchForm.svelte';
 	import { type DatatableColumns } from '$lib/types';
 
@@ -30,6 +31,7 @@
 		Εταιρεία: MemberCompanyNameTableColumn
 	};
 	let records: any[] = [];
+	let selectedRows: Set<string> = new Set<string>();
 </script>
 
 <div class="my-5">
@@ -40,8 +42,11 @@
 		collection="members"
 		placeholder="Αναζήτηση βάσει ονόματος, αριθμό μητρώου, email, τηλεφώνου"
 		searchForm={MemberSearchForm}
+		actions={MembersTableActions}
+		bind:selectedRows
 		showExport={true}
 	/>
 </div>
 
-<Datatable bind:records bind:columns={selectedColumns}></Datatable>
+<Datatable bind:records bind:columns={selectedColumns} bind:selectedRows selectacble={true}
+></Datatable>
