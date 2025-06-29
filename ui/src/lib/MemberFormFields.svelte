@@ -4,7 +4,7 @@
 	import MemberAddressTabbedFormFields from '$lib/MemberAddressTabbedFormFields.svelte';
 	import InputGroup from '$lib/InputGroup.svelte';
 	import MemberCompanyFormFields from '$lib/MemberCompanyFormFields.svelte';
-	import { type UpdateMemberForm } from '$lib/types';
+	import { type UpdateMemberForm, type Member } from '$lib/types';
 
 	export let record: Member = {};
 	export let form: UpdateMemberForm = {};
