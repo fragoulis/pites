@@ -118,6 +118,10 @@
 	<ToggleField bind:checked={form.other_union} label="Μέλος άλλους σωματείου" />
 </div>
 
+<div class="w-full">
+	<ToggleField bind:checked={form.fixed_payment} label="Πληρώνει με πάγια εντολή" />
+</div>
+
 <InputGroup legend="Γενικά σχόλια">
 	<div class="w-full">
 		<InputField id="comments" type="textarea" label="Σχόλια" bind:value={form.comments} />
