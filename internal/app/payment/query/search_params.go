@@ -73,27 +73,27 @@ func (p *ListPaymentsRequest) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 	expr := dbx.NewExp("")
 
 	if len(p.UserIDs) > 0 {
-		expr = dbx.And(dbx.In("created_by_user_id", list.ToInterfaceSlice(p.UserIDs)...))
+		expr = dbx.And(expr, dbx.In("created_by_user_id", list.ToInterfaceSlice(p.UserIDs)...))
 	}
 
 	if len(p.PaymentIDs) > 0 {
-		expr = dbx.And(dbx.In("member_id", list.ToInterfaceSlice(p.PaymentIDs)...))
+		expr = dbx.And(expr, dbx.In("member_id", list.ToInterfaceSlice(p.PaymentIDs)...))
 	}
 
 	if p.ReceiptState != "" {
 		if p.ReceiptState == "with" {
-			expr = dbx.And(dbx.NewExp("receipt_id is not null"))
+			expr = dbx.And(expr, dbx.NewExp("receipt_id is not null"))
 		} else {
-			expr = dbx.And(dbx.NewExp("receipt_id is null"))
+			expr = dbx.And(expr, dbx.NewExp("receipt_id is null"))
 		}
 	}
 
 	if p.IssueDateFrom != "" {
-		expr = dbx.And(dbx.NewExp("issued_at >= {:from}", dbx.Params{"from": p.IssueDateFrom}))
+		expr = dbx.And(expr, dbx.NewExp("issued_at >= {:from}", dbx.Params{"from": p.IssueDateFrom}))
 	}
 
 	if p.IssueDateTo != "" {
-		expr = dbx.And(dbx.NewExp("issued_at <= {:to}", dbx.Params{"to": p.IssueDateTo}))
+		expr = dbx.And(expr, dbx.NewExp("issued_at <= {:to}", dbx.Params{"to": p.IssueDateTo}))
 	}
 
 	if p.Query != "" {
@@ -104,16 +104,14 @@ func (p *ListPaymentsRequest) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 
 		searchQuery := utils.Normalize(p.Query)
 
-		queryExpr := dbx.Or(
+		expr = dbx.And(expr, dbx.Or(
 			dbx.Like("concat(members.first_name, ' ', members.last_name)", searchQuery),
 			dbx.Like("concat(members.last_name, ' ', members.first_name)", searchQuery),
 			dbx.Like("members.mobile", searchQuery),
 			dbx.Like("members.phone", searchQuery),
 			dbx.Like("members.email", searchQuery),
 			dbx.HashExp{"members.member_no": searchQuery},
-		)
-
-		expr = dbx.And(expr, queryExpr)
+		))
 	}
 
 	return query.
