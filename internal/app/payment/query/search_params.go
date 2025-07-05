@@ -82,9 +82,9 @@ func (p *ListPaymentsRequest) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 
 	if p.ReceiptState != "" {
 		if p.ReceiptState == "with" {
-			expr = dbx.And(expr, dbx.NewExp("receipt_id is not null"))
+			expr = dbx.And(expr, dbx.NewExp("receipt_id is not null and receipt_id != ''"))
 		} else {
-			expr = dbx.And(expr, dbx.NewExp("receipt_id is null"))
+			expr = dbx.And(expr, dbx.NewExp("receipt_id is null or receipt_id = ''"))
 		}
 	}
 
