@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PaymentSearchForm from '$lib/payment/SearchForm.svelte';
 	import MemberNamePaymentsTableColumn from '$lib/MemberNamePaymentsTableColumn.svelte';
 	import IssueDatePaymentsTableColumn from '$lib/IssueDatePaymentsTableColumn.svelte';
 	import Datatable from '$lib/Datatable.svelte';
@@ -22,6 +23,7 @@
 		Μήνες: 'months'
 	};
 	let records: any[] = [];
+	let selectedRows: Set<string> = new Set<string>();
 </script>
 
 <div class="my-5">
@@ -29,9 +31,12 @@
 		{availableColumns}
 		bind:selectedColumns
 		bind:records
+		bind:selectedRows
+		searchForm={PaymentSearchForm}
 		collection="payments"
-		placeholder="Αναζήτηση βάσει μέλους (ονομα, email, αρ. μητρώου, τηλεφωνο), ημερομηνίας (πχ 2024-11-08)"
+		placeholder="Αναζήτηση βάσει μέλους (ονομα, email, αρ. μητρώου, τηλεφωνο)"
 	/>
 </div>
 
-<Datatable bind:records bind:columns={selectedColumns}></Datatable>
+<Datatable bind:records bind:columns={selectedColumns} bind:selectedRows selectacble={true}
+></Datatable>

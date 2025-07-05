@@ -235,6 +235,12 @@ export type MemberSearchForm = {
 	with_fixed_monthly_payment?: boolean;
 };
 
+export type PaymentSearchForm = {
+	receipt_state?: 'with' | 'without' | '';
+	issue_date_from?: string;
+	issue_date_to?: string;
+};
+
 export type DatatableColumns = {
 	[key: string]: string | object;
 };
