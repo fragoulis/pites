@@ -222,7 +222,8 @@ export type NewMemberForm = {
 	MemberSubscriptionForm;
 
 export type MethodOptions = 'POST' | 'PATCH' | 'PUT';
-export type DatatableSearchForm = {
+
+export type MemberSearchForm = {
 	q?: string;
 	active_only?: boolean;
 	company_id?: string;

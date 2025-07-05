@@ -1,13 +1,13 @@
 <script lang="ts">
 	import ToggleField from '$lib/ToggleField.svelte';
 	import AutocompleteCompanyFormField from '$lib/AutocompleteCompanyFormField.svelte';
-	import { type DatatableSearchForm, type Chapter } from '$lib/types';
+	import { type MemberSearchForm, type Chapter } from '$lib/types';
 	import InputField from '$lib/InputField.svelte';
 	import MultiSelectAsyncFormField from '$lib/MultiSelectAsyncFormField.svelte';
 	import SelectAsyncFormField from './SelectAsyncFormField.svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 
-	export let form: DatatableSearchForm;
+	export let form: MemberSearchForm;
 
 	let companyQuery: string = '';
 	let addressFilterType: 'address' | 'chapter' = 'address';
@@ -24,6 +24,8 @@
 		form.chapter_id = '';
 		form.with_fixed_monthly_payment = undefined;
 	};
+
+	reset();
 </script>
 
 <div class="w-full">
