@@ -89,11 +89,11 @@ func (p *ListPaymentsRequest) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 	}
 
 	if p.IssueDateFrom != "" {
-		expr = dbx.And(expr, dbx.NewExp("issued_at >= {:from}", dbx.Params{"from": p.IssueDateFrom}))
+		expr = dbx.And(expr, dbx.NewExp("date(issued_at) >= {:from}", dbx.Params{"from": p.IssueDateFrom}))
 	}
 
 	if p.IssueDateTo != "" {
-		expr = dbx.And(expr, dbx.NewExp("issued_at <= {:to}", dbx.Params{"to": p.IssueDateTo}))
+		expr = dbx.And(expr, dbx.NewExp("date(issued_at) <= {:to}", dbx.Params{"to": p.IssueDateTo}))
 	}
 
 	if p.Query != "" {
