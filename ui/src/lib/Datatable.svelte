@@ -15,7 +15,7 @@
 	export let records: any[] = [];
 	export let loading: boolean = false;
 	export let selectacble: boolean = false;
-	export let selectedRows: Set<string>;
+	export let selectedRows: Set<string> = new Set<string>();
 
 	let selectAll: boolean = false;
 

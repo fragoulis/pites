@@ -17,9 +17,9 @@
 	export let showExport: boolean = false;
 	export let availableColumns: {};
 	export let selectedColumns: {};
-	export let selectedRows: Set<string>;
+	export let selectedRows: Set<string> = new Set<string>();
 
-	let form: DatatableSearchForm = { active_only: true };
+	let form: DatatableSearchForm = {};
 	let total: number = 0;
 	let requestKey: string = 'datatablesearchform';
 
