@@ -11,7 +11,7 @@
 	position="top-right"
 	color="red"
 	transition={slide}
-	bind:open
+	bind:toastStatus={open}
 	divClass="z-[60] w-full max-w-xs p-4 text-red-500 bg-green-100 shadow dark:text-gray-400 dark:bg-gray-800 gap-3"
 >
 	<svelte:fragment slot="icon">
