@@ -16,20 +16,20 @@ const (
 
 //nolint:tagliatelle
 type ListPaymentsRequest struct {
-	Query        string   `json:"q"`
-	PaymentIDs   []string `json:"member_ids"`
-	UserIDs      []string `json:"user_ids"`
-	WithReceipts *bool    `json:"with_receipts"`
-	Page         int64    `json:"page"`
-	PerPage      int64    `json:"per_page"`
-	Sort         string   `json:"sort"`
+	Query         string   `json:"q"`
+	PaymentIDs    []string `json:"member_ids"`
+	UserIDs       []string `json:"user_ids"`
+	ReceiptState  string   `json:"receipt_state"`
+	IssueDateFrom string   `json:"issue_date_from"`
+	IssueDateTo   string   `json:"issue_date_to"`
+	Page          int64    `json:"page"`
+	PerPage       int64    `json:"per_page"`
+	Sort          string   `json:"sort"`
 }
 
 func NewListPaymentsRequest(values url.Values) *ListPaymentsRequest {
 	page := 0
 	perPage := 0
-
-	var withReceipts *bool
 
 	pageRaw := values.Get("page")
 	if pageRaw != "" {
@@ -41,22 +41,16 @@ func NewListPaymentsRequest(values url.Values) *ListPaymentsRequest {
 		perPage, _ = strconv.Atoi(perPageRaw)
 	}
 
-	withReceiptsRaw := values.Get("with_receipts")
-	if withReceiptsRaw != "" {
-		value, err := strconv.ParseBool(withReceiptsRaw)
-		if err == nil {
-			withReceipts = &value
-		}
-	}
-
 	return &ListPaymentsRequest{
-		Query:        values.Get("q"),
-		UserIDs:      values["user_ids"],
-		PaymentIDs:   values["member_ids"],
-		WithReceipts: withReceipts,
-		Page:         int64(page),
-		PerPage:      int64(perPage),
-		Sort:         values.Get("sort"),
+		Query:         values.Get("q"),
+		UserIDs:       values["user_ids"],
+		PaymentIDs:    values["member_ids"],
+		ReceiptState:  values.Get("receipt_state"),
+		IssueDateFrom: values.Get("issue_date_from"),
+		IssueDateTo:   values.Get("issue_date_to"),
+		Page:          int64(page),
+		PerPage:       int64(perPage),
+		Sort:          values.Get("sort"),
 	}
 }
 
@@ -86,12 +80,20 @@ func (p *ListPaymentsRequest) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 		expr = dbx.And(dbx.In("member_id", list.ToInterfaceSlice(p.PaymentIDs)...))
 	}
 
-	if p.WithReceipts != nil {
-		if *p.WithReceipts {
+	if p.ReceiptState != "" {
+		if p.ReceiptState == "with" {
 			expr = dbx.And(dbx.NewExp("receipt_id is not null"))
 		} else {
 			expr = dbx.And(dbx.NewExp("receipt_id is null"))
 		}
+	}
+
+	if p.IssueDateFrom != "" {
+		expr = dbx.And(dbx.NewExp("issued_at >= {:from}", dbx.Params{"from": p.IssueDateFrom}))
+	}
+
+	if p.IssueDateTo != "" {
+		expr = dbx.And(dbx.NewExp("issued_at <= {:to}", dbx.Params{"to": p.IssueDateTo}))
 	}
 
 	if p.Query != "" {
@@ -103,7 +105,6 @@ func (p *ListPaymentsRequest) Apply(query *dbx.SelectQuery) *dbx.SelectQuery {
 		searchQuery := utils.Normalize(p.Query)
 
 		queryExpr := dbx.Or(
-			dbx.Like("issued_at", searchQuery),
 			dbx.Like("concat(members.first_name, ' ', members.last_name)", searchQuery),
 			dbx.Like("concat(members.last_name, ' ', members.first_name)", searchQuery),
 			dbx.Like("members.mobile", searchQuery),
