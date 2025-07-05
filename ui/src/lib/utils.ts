@@ -42,3 +42,27 @@ export const todayStr = () => {
 		('0' + today.getDate()).slice(-2)
 	);
 };
+
+export const weekAgoStr = () => {
+	const today = new Date();
+	const ago = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+	return (
+		ago.getFullYear() +
+		'-' +
+		('0' + (ago.getMonth() + 1)).slice(-2) +
+		'-' +
+		('0' + ago.getDate()).slice(-2)
+	);
+};
+
+export const monthAgoStr = () => {
+	const today = new Date();
+	const ago = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+	return (
+		ago.getFullYear() +
+		'-' +
+		('0' + (ago.getMonth() + 1)).slice(-2) +
+		'-' +
+		('0' + ago.getDate()).slice(-2)
+	);
+};
