@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { type CreatePaymentFormForBatchMembers } from '$lib/types';
 	import InputField from '$lib/InputField.svelte';
+	import AlertWarning from '$lib/AlertWarning.svelte';
 	import Form from '$lib/Form.svelte';
 	import { activePayment } from '$lib/store';
 	import { todayStr } from '$lib/utils';
@@ -23,6 +24,10 @@
 </script>
 
 <Form bind:form url="/payments/batch" bind:errors on:success on:failure>
+	<AlertWarning>
+		Η ενέργεια θα δημιουργήσει εισπράξεις <strong>χωρίς απόδειξη</strong>.
+	</AlertWarning>
+
 	<div class="w-full mb-5">
 		<InputGroup legend="Είσπραξη">
 			<InputField
