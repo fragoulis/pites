@@ -19,7 +19,6 @@
 			return;
 		}
 
-		errors = {};
 		saving = true;
 		try {
 			dispatch('beforeSend');
