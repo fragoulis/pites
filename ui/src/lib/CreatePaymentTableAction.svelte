@@ -17,7 +17,7 @@
 	const onSuccess = () => {
 		$sharedToast.show = true;
 		$sharedToast.success = true;
-		$sharedToast.message = 'Η εισπράξεις περάστηκαν επιτυχώς.';
+		$sharedToast.message = 'Οι εισπράξεις περάστηκαν επιτυχώς.';
 
 		hidden = true;
 	};
