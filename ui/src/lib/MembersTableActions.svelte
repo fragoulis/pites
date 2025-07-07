@@ -5,7 +5,7 @@
 	import CreatePaymentTableAction from '$lib/CreatePaymentTableAction.svelte';
 
 	export let createPaymentActionHidden = true;
-	export let selectedRows: Set<string>;
+	export let selectedRows: Map<string, any>;
 </script>
 
 <Button outline pill color="light">Ενέργειες<ChevronDownOutline /></Button>

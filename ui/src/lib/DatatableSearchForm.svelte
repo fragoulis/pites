@@ -17,7 +17,7 @@
 	export let showExport: boolean = false;
 	export let availableColumns: {};
 	export let selectedColumns: {};
-	export let selectedRows: Set<string> = new Set<string>();
+	export let selectedRows: Map<string, any> = new Map<string, any>();
 
 	let form: DatatableSearchForm = {};
 	let total: number = 0;

@@ -6,7 +6,7 @@
 	import { sharedToast } from '$lib/store';
 
 	export let hidden = true;
-	export let members: Set<string>;
+	export let members: Map<string, any>;
 
 	let transitionParams = {
 		x: 320,
