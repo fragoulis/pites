@@ -10,6 +10,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
@@ -34,9 +35,9 @@ var memberNotFoundErr = validation.NewError("validation_required", "Δεν υπ�
 var insufficientAmount = validation.NewError("validation_required", "Το ποσό δεν επαρκεί αφού περιέχει εγγραφή")
 
 //nolint:gochecknoglobals
-var requiredReceiptBlockNo = validation.NewError(
+var requiredField = validation.NewError(
 	"validation_required",
-	"Το πεδίο πρέπει να συμπληρωθεί αφού υπάρχει αριθμός απόδειξης.",
+	"Το πεδίο πρέπει να συμπληρωθεί.",
 )
 
 //nolint:gochecknoglobals
@@ -100,8 +101,12 @@ func Create(
 			errs["amount"] = insufficientAmount
 		}
 
-		if !data.WithoutReceipt && data.ReceiptNo > 0 && data.ReceiptBlockNo <= 0 {
-			errs["receipt_block_no"] = requiredReceiptBlockNo
+		if !data.WithoutReceipt && data.ReceiptNo <= 0 {
+			errs["receipt_no"] = requiredField
+		}
+
+		if !data.WithoutReceipt && data.ReceiptBlockNo <= 0 {
+			errs["receipt_block_no"] = requiredField
 		}
 	}
 
@@ -256,8 +261,24 @@ Unknown error: %s`, err)
 		return nil, err
 	}
 
+	// Fetch newly created record
+	newRec, err := dao.FindRecordById("payments", newPayment.GetId())
+	if err != nil {
+		return nil, fmt.Errorf("failed to find new record: %w", err)
+	}
+
+	err = apis.EnrichRecord(
+		ctx,
+		dao,
+		newRec,
+		"receipt_id",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to expand relations for companies: %w", err)
+	}
+
 	return &CreatePaymentResponse{
-		Payment: model.NewFromRecordNoMember(newPayment, member.MemberNo, member.FullName),
+		Payment: model.NewFromRecordNoMember(newRec, member.MemberNo, member.FullName),
 		Status:  member.PaymentStatus.Formatted,
 	}, nil
 }

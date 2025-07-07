@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -47,12 +48,25 @@ func NewFromRecord(rec *models.Record) *Payment {
 func NewFromRecordNoMember(rec *models.Record, memberNo, memberName string) *Payment {
 	receipt := rec.ExpandedOne("receipt_id")
 
-	receiptBlockNo := 0
-	receiptNo := 0
+	receiptBlockNo := -1
+	receiptNo := -1
 
 	if receipt != nil {
-		receiptBlockNo = receipt.GetInt("block_no")
-		receiptNo = receipt.GetInt("receipt_no")
+		var err error
+
+		if receipt.GetString("block_no") != "" {
+			receiptBlockNo, err = strconv.Atoi(receipt.GetString("block_no"))
+			if err != nil {
+				panic(fmt.Errorf("failed to covert block no to int: %w", err))
+			}
+		}
+
+		if receipt.GetString("receipt_no") != "" {
+			receiptNo, err = strconv.Atoi(receipt.GetString("receipt_no"))
+			if err != nil {
+				panic(fmt.Errorf("failed to covert receipt no to int: %w", err))
+			}
+		}
 	}
 
 	return &Payment{
