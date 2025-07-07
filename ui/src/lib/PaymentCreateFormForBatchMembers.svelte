@@ -21,7 +21,13 @@
 
 <Form bind:form url="/payments/batch" bind:errors on:success on:failure>
 	<AlertWarning>
-		Η ενέργεια θα δημιουργήσει εισπράξεις <strong>χωρίς απόδειξη</strong>.
+		Η ενέργεια θα δημιουργήσει εισπράξεις <strong>χωρίς απόδειξη</strong> για τα ακόλουθα μέλη:
+
+		<ul>
+			{#each members.values() as member}
+				<li>{member.name_formatted}</li>
+			{/each}
+		</ul>
 	</AlertWarning>
 
 	<div class="w-full mb-5">
