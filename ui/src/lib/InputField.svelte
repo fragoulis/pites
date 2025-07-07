@@ -20,11 +20,12 @@
 	export let min: number | undefined = undefined;
 	export let max: number | undefined = undefined;
 	export let help: string = '';
+	export let divClass: string = 'mb-4';
 </script>
 
-<div class="mb-4">
+<div class={divClass}>
 	{#if type == 'textarea'}
-		<Textarea rows="8" placeholder={label} bind:value on:keyup />
+		<Textarea rows={8} placeholder={label} bind:value on:keyup />
 		{#if help != ''}
 			<Helper class="mt-2 text-sm">
 				{help}
