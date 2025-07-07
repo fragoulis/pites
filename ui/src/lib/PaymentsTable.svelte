@@ -2,6 +2,7 @@
 	import PaymentSearchForm from '$lib/payment/SearchForm.svelte';
 	import MemberNamePaymentsTableColumn from '$lib/MemberNamePaymentsTableColumn.svelte';
 	import IssueDatePaymentsTableColumn from '$lib/IssueDatePaymentsTableColumn.svelte';
+	import ReceiptPaymentsTableColumn from '$lib/payment/ReceiptPaymentsTableColumn.svelte';
 	import Datatable from '$lib/Datatable.svelte';
 	import DatatableSearchForm from '$lib/DatatableSearchForm.svelte';
 	import { type DatatableColumns, type Payment } from '$lib/types';
@@ -10,16 +11,14 @@
 		'Ημ/νία': IssueDatePaymentsTableColumn,
 		Μέλος: MemberNamePaymentsTableColumn,
 		Ποσό: 'amount',
-		Μπλοκ: 'receipt_block_no',
-		Απόδειξη: 'receipt_no',
+		Απόδειξη: ReceiptPaymentsTableColumn,
 		Μήνες: 'months'
 	};
 	let selectedColumns: {} = {
 		'Ημ/νία': IssueDatePaymentsTableColumn,
 		Μέλος: MemberNamePaymentsTableColumn,
 		Ποσό: 'amount',
-		Μπλοκ: 'receipt_block_no',
-		Απόδειξη: 'receipt_no',
+		Απόδειξη: ReceiptPaymentsTableColumn,
 		Μήνες: 'months'
 	};
 	let records: any[] = [];
