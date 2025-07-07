@@ -66,6 +66,7 @@ type Member struct {
 	BusinessTypeName      string                   `json:"business_type_name"`
 	Specialty             string                   `json:"specialty"`
 	Education             string                   `json:"education"`
+	FixedPayment          bool                     `json:"fixed_payment"`
 }
 
 func NewFromRecord(
@@ -107,6 +108,7 @@ func NewFromRecord(
 		CompanyID:         rec.GetString("company_id"),
 		Specialty:         rec.GetString("specialty"),
 		Education:         rec.GetString("education"),
+		FixedPayment:      rec.GetInt("fixed_monthly_amount_in_euros") != 0,
 	}
 
 	member.setEmploymentStatus(rec)

@@ -47,6 +47,7 @@
 		'Αριθμός Δελτίου Ταυτότητας': (r: Member) => r.id_card_number,
 		'Αριθμός Μητρώου Ασφαλισμένου': (r: Member) => r.social_security_num,
 		'Μέλος άλλου σωματείου': (r: Member) => (r.other_union ? 'Ναι' : 'Όχι'),
+		'Πληρώνει με πάγια εντολή': (r: Member) => (r.fixed_payment ? 'Ναι' : 'Όχι'),
 		Σχόλια: MemberCommentsAutosave
 	};
 

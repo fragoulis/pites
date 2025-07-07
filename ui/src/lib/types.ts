@@ -182,6 +182,7 @@ export type Member = {
 	legacy_post_code: string;
 	specialty: string;
 	education: string;
+	fixed_payment: boolean;
 };
 
 export type Address = {
