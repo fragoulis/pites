@@ -15,7 +15,7 @@
 	$: if (selected !== lastSelected) {
 		lastSelected = selected;
 		dispatch('change', {
-			id: record.id,
+			record: record,
 			selected: selected
 		});
 	}

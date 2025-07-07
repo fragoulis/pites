@@ -15,7 +15,7 @@
 	export let records: any[] = [];
 	export let loading: boolean = false;
 	export let selectacble: boolean = false;
-	export let selectedRows: Set<string> = new Set<string>();
+	export let selectedRows: Map<string, any> = new Map<string, any>();
 
 	let selectAll: boolean = false;
 
@@ -32,9 +32,9 @@
 
 	const onSelectableChangeState = (e: any) => {
 		if (e.detail.selected) {
-			selectedRows.add(e.detail.id);
+			selectedRows.set(e.detail.record.id, e.detail.record);
 		} else {
-			selectedRows.delete(e.detail.id);
+			selectedRows.delete(e.detail.record.id);
 		}
 	};
 </script>

@@ -23,7 +23,7 @@
 		Μήνες: 'months'
 	};
 	let records: any[] = [];
-	let selectedRows: Set<string> = new Set<string>();
+	let selectedRows: Map<string, any> = new Map<string, any>();
 </script>
 
 <div class="my-5">

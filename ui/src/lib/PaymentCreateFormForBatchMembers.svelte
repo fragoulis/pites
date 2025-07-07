@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { type CreatePaymentFormForBatchMembers } from '$lib/types';
 	import InputField from '$lib/InputField.svelte';
 	import AlertWarning from '$lib/AlertWarning.svelte';
@@ -7,14 +6,11 @@
 	import { activePayment } from '$lib/store';
 	import { todayStr } from '$lib/utils';
 	import InputGroup from '$lib/InputGroup.svelte';
-	import { Input } from 'flowbite-svelte';
 
-	const dispatch = createEventDispatcher();
-
-	export let members: Set<string>;
+	export let members: Map<string, any>;
 
 	let form: CreatePaymentFormForBatchMembers = {
-		member_ids: Array.from(members),
+		member_ids: [...members.keys()],
 		amount: 2,
 		issued_at: $activePayment.issued_at == '' ? todayStr() : $activePayment.issued_at,
 		comments: ''
