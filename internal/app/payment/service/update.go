@@ -82,8 +82,12 @@ func Update(
 		errs["amount"] = invalidAmount
 	}
 
-	if !data.WithoutReceipt && data.ReceiptNo > 0 && data.ReceiptBlockNo <= 0 {
-		errs["receipt_block_no"] = requiredReceiptBlockNo
+	if !data.WithoutReceipt && data.ReceiptNo <= 0 {
+		errs["receipt_no"] = requiredField
+	}
+
+	if !data.WithoutReceipt && data.ReceiptBlockNo <= 0 {
+		errs["receipt_block_no"] = requiredField
 	}
 
 	if len(errs) != 0 {
