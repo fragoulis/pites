@@ -33,9 +33,23 @@
 			}
 
 			if (err.data) {
-				errors = objectMap(err.data.data, (v: any) => {
-					return v.message;
-				});
+				errors = {};
+
+				let errData = err.data.data;
+
+				for (let field in errData) {
+					if ('message' in errData[field]) {
+						// single error
+						errors[field] = errData[field].message;
+					} else {
+						// array of errors
+						errors[field] = [];
+						for (let index in errData[field]) {
+							errors[field][index] = errData[field][index].message;
+						}
+					}
+				}
+
 				const firstErrorId = Object.keys(errors)[0];
 				document.getElementById(firstErrorId)?.focus();
 				dispatch('failure', { message: err.message, errors: errors });
