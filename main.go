@@ -15,10 +15,12 @@ import (
 	companyAPI "github.com/fragoulis/setip_v2/internal/app/company/api"
 	memberAPI "github.com/fragoulis/setip_v2/internal/app/member/api"
 	paymentAPI "github.com/fragoulis/setip_v2/internal/app/payment/api"
+	receiptAPI "github.com/fragoulis/setip_v2/internal/app/receipt/api"
 	dbCompany "github.com/fragoulis/setip_v2/internal/db/company"
 	dbEmployment "github.com/fragoulis/setip_v2/internal/db/employment"
 	dbMember "github.com/fragoulis/setip_v2/internal/db/member"
 	dbPayment "github.com/fragoulis/setip_v2/internal/db/payment"
+	dbReceipt "github.com/fragoulis/setip_v2/internal/db/receipt"
 	dbSubscription "github.com/fragoulis/setip_v2/internal/db/subscription"
 	_ "github.com/fragoulis/setip_v2/migrations"
 	"github.com/fragoulis/setip_v2/ui"
@@ -33,6 +35,7 @@ func main() {
 		addressAPI.RegisterRoutes(srvEvnt, app)
 		paymentAPI.RegisterRoutes(srvEvnt, app)
 		chaptersAPI.RegisterRoutes(srvEvnt, app)
+		receiptAPI.RegisterRoutes(srvEvnt, app)
 
 		// serves static files from the provided public dir (if exists)
 		srvEvnt.Router.GET("/*", apis.StaticDirectoryHandler(ui.DistDirFS, true))
@@ -46,6 +49,7 @@ func main() {
 	dbEmployment.RegisterCallbacks(app)
 	dbPayment.RegisterCallbacks(app)
 	dbSubscription.RegisterCallbacks(app)
+	dbReceipt.RegisterCallbacks(app)
 
 	app.RootCmd.AddCommand(cmd.NewUserCommand(app))
 	app.RootCmd.AddCommand(cmd.NewSeedCommand(app))
