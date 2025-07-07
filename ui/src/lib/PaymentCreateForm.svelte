@@ -97,7 +97,13 @@
 							Ημερομηνία: <span class="font-bold">{paymentDetails.issued_at_formatted}</span>
 						</li>
 						<li>
-							Απόδειξη: <span class="font-bold">{paymentDetails.receipt_no}</span>
+							Απόδειξη: <span class="font-bold">
+								{#if paymentDetails.receipt_no > 0}
+									#{paymentDetails.receipt_no} ({paymentDetails.receipt_block_no})
+								{:else}
+									Χωρίς απόδειξη
+								{/if}
+							</span>
 						</li>
 						<li>
 							Ποσό: <span class="font-bold">{paymentDetails.amount} €</span>
