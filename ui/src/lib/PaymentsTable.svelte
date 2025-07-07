@@ -6,6 +6,7 @@
 	import Datatable from '$lib/Datatable.svelte';
 	import DatatableSearchForm from '$lib/DatatableSearchForm.svelte';
 	import { type DatatableColumns, type Payment } from '$lib/types';
+	import PaymentsTableActions from '$lib/payment/TableActions.svelte';
 
 	const availableColumns: DatatableColumns = {
 		'Ημ/νία': IssueDatePaymentsTableColumn,
@@ -32,6 +33,7 @@
 		bind:records
 		bind:selectedRows
 		searchForm={PaymentSearchForm}
+		actions={PaymentsTableActions}
 		collection="payments"
 		placeholder="Αναζήτηση βάσει μέλους (ονομα, email, αρ. μητρώου, τηλεφωνο)"
 	/>

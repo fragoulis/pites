@@ -53,6 +53,14 @@ export type CreatePaymentFormForBatchMembers = {
 	comments: string;
 };
 
+export type CreateReceiptFormForBatchPayments = {
+	payment_ids: string[];
+	receipt_nos: number[];
+	block_nos: number[];
+	issued_at: string;
+	comments: string;
+};
+
 export type UpdatePaymentForm = {
 	amount?: number;
 	receipt_block_no?: number;
